@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Seleccionar Pagos Pendientes</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Seleccionar Pagos Pendientes</h1>
+
+        <div class="mb-4">
+            <a th:href="@{/proveedores}" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Volver a Proveedores</a>
+        </div>
+
+        <h2 class="text-xl font-semibold mb-4">Proveedor: <span th:text="${proveedor.nombre}"></span></h2>
+
+        <form action="#" th:action="@{/proveedores/{id}/registrar-pago(id=${proveedor.id})}" method="post">
+            <table class="min-w-full bg-white border border-gray-300">
+                <thead>
+                    <tr>
+                        <th class="border border-gray-300 px-4 py-2">Seleccionar</th>
+                        <th class="border border-gray-300 px-4 py-2">Descripción</th>
+                        <th class="border border-gray-300 px-4 py-2">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="compra : ${comprasPendientes}">
+                        <td class="border border-gray-300 px-4 py-2">
+                            <input type="checkbox" th:id="'compra-' + ${compra.id} " name="comprasSeleccionadas" th:value="${compra.id}"/>
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2" th:text="${compra.descripcion}"></td>
+                        <td class="border border-gray-300 px-4 py-2" th:text="${compra.monto}"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="mt-4">
+                <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Registrar Pago</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

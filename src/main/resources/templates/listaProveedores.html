@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Lista de Proveedores</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Lista de Proveedores</h1>
+        
+        <div class="mb-4">
+            <a th:href="@{/proveedores/nuevo}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                Crear Nuevo Proveedor
+            </a>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-blue-600 text-white">
+                    <tr>
+                        <th class="py-2 px-4 text-left">ID</th>
+                        <th class="py-2 px-4 text-left">Nombre</th>
+                        <th class="py-2 px-4 text-left">Contacto</th>
+                        <th class="py-2 px-4 text-left">Dirección</th>
+                        <th class="py-2 px-4 text-left">Teléfono</th>
+                        <th class="py-2 px-4 text-left">Email</th>
+                        <th class="py-2 px-4 text-left">Deuda</th>
+                        <th class="py-2 px-4 text-left">Pagos</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
+                    </tr>
+                </thead>
+				<tbody class="text-gray-700">
+				    <tr th:each="proveedor : ${proveedores}" class="border-b hover:bg-gray-100">
+				        <td th:text="${proveedor.id}" class="py-2 px-4"></td>
+				        <td th:text="${proveedor.nombre}" class="py-2 px-4"></td>
+				        <td th:text="${proveedor.contacto}" class="py-2 px-4"></td>
+				        <td th:text="${proveedor.direccion}" class="py-2 px-4"></td>
+				        <td th:text="${proveedor.telefono}" class="py-2 px-4"></td>
+				        <td th:text="${proveedor.email}" class="py-2 px-4"></td>
+				        <td th:text="${#lists.isEmpty(proveedor.deudas) ? 'No hay deudas' : totalDeuda}" class="py-2 px-4"></td>
+				        <td th:text="${#lists.isEmpty(proveedor.pagos) ? 'No hay pagos' : totalPagos}" class="py-2 px-4"></td>
+				        <td class="py-2 px-4 flex space-x-2">
+				            <a th:href="@{/proveedores/editar/{id}(id=${proveedor.id})}"
+				               class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-1 px-3 rounded">
+				               Editar
+				            </a>
+				            <a th:href="@{/proveedores/eliminar/{id}(id=${proveedor.id})}" 
+				               onclick="return confirm('¿Está seguro de eliminar este proveedor?');"
+				               class="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded">
+				               Eliminar
+				            </a>
+				            <a th:href="@{/proveedores/detalles/{id}(id=${proveedor.id})}" 
+				               class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded">
+				                Detalles
+				            </a>
+				        </td>
+				    </tr>
+				</tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

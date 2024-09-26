@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${producto.id != null} ? 'Editar Producto' : 'Nuevo Producto'">Producto</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        function togglePrecio() {
+            var esPesable = document.getElementById("esPesable").checked;
+            var labelPrecio = document.getElementById("labelPrecio");
+            var labelCantidad = document.getElementById("labelCantidad");
+            var unidadCantidad = document.getElementById("unidadCantidad");
+
+            if (esPesable) {
+                labelPrecio.textContent = "Precio por kg:";
+                labelCantidad.textContent = "Cantidad (kg):";
+                unidadCantidad.textContent = "kg";
+            } else {
+                labelPrecio.textContent = "Precio unitario:";
+                labelCantidad.textContent = "Cantidad (u):";
+                unidadCantidad.textContent = "u";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            togglePrecio(); // Inicializar las etiquetas según el valor actual de esPesable
+        });
+    </script>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold mb-6" th:text="${producto.id != null} ? 'Editar Producto' : 'Nuevo Producto'"></h1>
+        <form th:action="@{/productos/editar}" th:object="${producto}" method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+            <input type="hidden" th:field="*{id}" />
+            <div class="mb-4">
+                <label for="nombre" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
+                <input type="text" id="nombre" th:field="*{nombre}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="categoria" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
+                <select id="categoria" th:field="*{categoria}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}" th:selected="${producto.categoria.id == cat.id}">Categoría</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="descripcion" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
+                <textarea id="descripcion" th:field="*{descripcion}" rows="4" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="esPesable" class="block text-gray-700 text-sm font-bold mb-2">Pesable:</label>
+                <input type="checkbox" id="esPesable" th:field="*{esPesable}" onchange="togglePrecio()" class="mr-2 leading-tight" th:checked="${producto.esPesable}">
+                <span class="text-sm">¿Es pesable?</span>
+            </div>
+            <div class="mb-4">
+                <label id="labelPrecio" for="precio" th:text="${producto.esPesable} ? 'Precio por kg:' : 'Precio unitario:'" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
+                <input type="text" id="precio" th:field="*{precioCompra}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label id="labelCantidad" for="cantidad" th:text="${producto.esPesable} ? 'Cantidad (kg):' : 'Cantidad (u):'" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
+                <input type="text" id="cantidad" th:field="*{stock}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <span id="unidadCantidad" th:text="${producto.esPesable} ? 'kg' : 'u'" class="text-gray-600 text-sm">u</span>
+            </div>
+            <div class="mb-4">
+                <label for="grasaDesperdicio" class="block text-gray-700 text-sm font-bold mb-2">Grasa de Desperdicio:</label>
+                <input type="text" id="grasaDesperdicio" th:field="*{grasaDesperdicio}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label for="otrosDesperdicios" class="block text-gray-700 text-sm font-bold mb-2">Otros Desperdicios:</label>
+                <input type="text" id="otrosDesperdicios" th:field="*{otrosDesperdicios}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-6">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Guardar</button>
+            </div>
+        </form>
+        <a th:href="@{/productos}" class="text-sm text-gray-600">Volver</a>
+    </div>
+</body>
+</html>

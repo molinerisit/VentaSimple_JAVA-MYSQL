@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Compras</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Lista de Compras</h1>
+        
+        <div class="mb-4 flex space-x-4">
+            <a href="/compras/nueva" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                Nueva Compra
+            </a>
+            <a href="/proveedores" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded">
+                Lista Proveedores
+            </a>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-blue-600 text-white">
+                    <tr>
+                        <th class="py-2 px-4 text-left">ID</th>
+                        <th class="py-2 px-4 text-left">Fecha</th>
+						<th class="py-2 px-4 text-left">Cantidad</th> <!-- Nueva columna para la cantidad -->
+						<th class="py-2 px-4 text-left">Total</th>
+                        <th class="py-2 px-4 text-left">Producto</th>
+                        <th class="py-2 px-4 text-left">Proveedor</th>
+                        <th class="py-2 px-4 text-left">Precio Compra</th>
+						<th class="py-2 px-4 text-left">Precio Venta</th>
+						<th class="py-2 px-4 text-left">Porcentaje</th>
+
+                        <th class="py-2 px-4 text-left">Medio de Pago</th>
+                        <th class="py-2 px-4 text-left">Pagado</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    <tr th:each="compra : ${compras}" class="border-b hover:bg-gray-100">
+                        <td th:text="${compra.id}" class="py-2 px-4">1</td>
+                        <td th:text="${#dates.format(compra.fecha, 'dd/MM/yyyy')}" class="py-2 px-4">01/01/2023</td>
+						<td th:text="${compra.cantidad}" class="py-2 px-4"></td> <!-- Mostrar la cantidad aquí -->
+
+						<td th:text="${#numbers.formatDecimal(compra.total, 1, 2)}" class="py-2 px-4">100.00</td>
+                        <td th:text="${compra.producto.nombre}" class="py-2 px-4">Carne</td>
+                        <td th:text="${compra.proveedor.nombre}" class="py-2 px-4">Proveedor</td>
+                        <td th:text="${#numbers.formatDecimal(compra.precioCompra, 1, 2)}" class="py-2 px-4"></td>
+						<td th:text="${#numbers.formatDecimal(compra.precioVenta, 1, 2)}" class="py-2 px-4"></td>
+						<td th:text="${compra.PorcentajeRentabilidad} + '%' " class="py-2 px-4"></td> <!-- Mostrar porcentaje con el símbolo -->
+                        <td th:text="${compra.medioDePago}" class="py-2 px-4"></td>
+                        <td th:text="${compra.pagado ? 'Sí' : 'No'}" class="py-2 px-4"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

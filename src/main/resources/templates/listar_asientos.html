@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Asientos Contables</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Asientos Contables</h1>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-blue-600 text-white">
+                    <tr>
+                        <th class="py-2 px-4 text-left">ID</th>
+                        <th class="py-2 px-4 text-left">Fecha</th>
+                        <th class="py-2 px-4 text-left">Cuenta</th>
+                        <th class="py-2 px-4 text-left">Monto</th>
+                        <th class="py-2 px-4 text-left">Detalles</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    <tr th:each="asiento : ${asientos}" class="border-b hover:bg-gray-100">
+                        <td th:text="${asiento.id}" class="py-2 px-4">ID</td>
+                        <td th:text="${asiento.fecha}" class="py-2 px-4">Fecha</td>
+                        <td th:text="${asiento.cuentaContable.nombre}" class="py-2 px-4">Cuenta</td>
+                        <td th:text="${asiento.monto}" class="py-2 px-4">Monto</td>
+                        <td th:text="${asiento.detalles}" class="py-2 px-4">Detalles</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Detalle del Proveedor</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Detalle del Proveedor</h1>
+        
+        <div class="mb-4">
+            <a th:href="@{/proveedores}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                Volver a la Lista de Proveedores
+            </a>
+        </div>
+
+        <!-- Información del proveedor -->
+		<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+		    <h2 class="text-2xl font-bold mb-4">Información del Proveedor</h2>
+		    <p><strong>ID:</strong> <span th:text="${proveedor.id}"></span></p>
+		    <p><strong>Nombre:</strong> <span th:text="${proveedor.nombre}"></span></p>
+		    <p><strong>Contacto:</strong> <span th:text="${proveedor.contacto}"></span></p>
+		    <p><strong>Dirección:</strong> <span th:text="${proveedor.direccion}"></span></p>
+		    <p><strong>Teléfono:</strong> <span th:text="${proveedor.telefono}"></span></p>
+		    <p><strong>Email:</strong> <span th:text="${proveedor.email}"></span></p>
+			<p><strong>Total  Pagos:</strong> $<span th:text="${totalPagos}"></span></p>
+			<p><strong>Total  Deudas:</strong> $<span th:text="${totalDeuda}"></span></p>
+
+		</div>
+
+
+		<!-- Lista de compras realizadas al proveedor -->
+		<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+			<h2 class="text-2xl font-bold mb-4">Compras</h2>
+			<table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+			    <thead class="bg-blue-600 text-white">
+			        <tr>
+			            <th class="py-2 px-4 text-left">Fecha</th>
+			            <th class="py-2 px-4 text-left">Descripción</th>
+			            <th class="py-2 px-4 text-left">Monto</th>
+			            <th class="py-2 px-4 text-left">Medio de Pago</th>
+			            <th class="py-2 px-4 text-left">Estado de Pago</th>
+			            <th class="py-2 px-4 text-left">Tipo</th> <!-- Nueva columna -->
+			        </tr>
+			    </thead>
+			    <tbody class="text-gray-700">
+			        <tr th:each="compra : ${compras}" class="border-b hover:bg-gray-100">
+			            <td th:text="${#dates.format(compra.fecha, 'dd/MM/yyyy')}" class="py-2 px-4"></td>
+			            <td th:text="${compra.producto.nombre}" class="py-2 px-4"></td>
+			            <td th:text="${#numbers.formatDecimal(compra.total, 1, 2)}" class="py-2 px-4"></td>
+			            <td th:text="${compra.medioDePago}" class="py-2 px-4"></td>
+			            <td th:text="${compra.pagado ? 'Sí' : 'No'}" class="py-2 px-4"></td>
+			            <td class="py-2 px-4">Producto</td> <!-- Marca como producto -->
+			        </tr>
+			        <tr th:each="compraInsumo : ${comprasInsumos}" class="border-b hover:bg-gray-100">
+			            <td th:text="${#dates.format(compraInsumo.fecha, 'dd/MM/yyyy')}" class="py-2 px-4"></td>
+			            <td th:text="${compraInsumo.insumo.nombre}" class="py-2 px-4"></td>
+			            <td th:text="${#numbers.formatDecimal(compraInsumo.total, 1, 2)}" class="py-2 px-4"></td>
+			            <td th:text="${compraInsumo.medioDePago}" class="py-2 px-4"></td>
+			            <td th:text="${compraInsumo.pagado ? 'Sí' : 'No'}" class="py-2 px-4"></td>
+			            <td class="py-2 px-4">Insumo</td> <!-- Marca como insumo -->
+			        </tr>
+			    </tbody>
+			</table>
+
+		</div>
+		
+		
+		<!-- Lista de deudas del proveedor -->
+		 <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+		     <h2 class="text-2xl font-bold mb-4">Deudas</h2>
+		     <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+		         <thead class="bg-red-600 text-white">
+		             <tr>
+		                 <th class="py-2 px-4 text-left">Fecha de Deuda</th>
+		                 <th class="py-2 px-4 text-left">Descripción</th>
+		                 <th class="py-2 px-4 text-left">Monto</th>
+		                 <th class="py-2 px-4 text-left">Estado</th>
+		             </tr>
+		         </thead>
+		         <tbody class="text-gray-700">
+		             <tr th:each="deuda : ${proveedor.deudas}" class="border-b hover:bg-gray-100">
+						<td th:text="${formattedFechaDeuda}"></td>
+		                 <td th:text="${deuda.descripcion}" class="py-2 px-4"></td>
+		                 <td th:text="${#numbers.formatDecimal(deuda.monto, 1, 2)}" class="py-2 px-4"></td>
+		               <td th:text="${deuda.pagado ? 'Pagado' : 'Pendiente'}" class="py-2 px-4"></td>
+		             </tr>
+		             <tr th:if="${proveedor.deudas.size() == 0}">
+		                 <td colspan="4" class="text-center py-4">No hay deudas</td>
+		             </tr>
+		         </tbody>
+		     </table>
+		 </div>
+
+
+		<!-- Lista de pagos realizados al proveedor -->
+		<!-- Lista de pagos realizados al proveedor -->
+		<div class="bg-white shadow-md rounded-lg p-6 mb-6">
+		    <h2 class="text-2xl font-bold mb-4">Pagos Realizados</h2>
+		    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+		        <thead class="bg-green-600 text-white">
+		            <tr>
+		                <th class="py-2 px-4 text-left">Fecha de Pago</th>
+		                <th class="py-2 px-4 text-left">Monto</th>
+		                <th class="py-2 px-4 text-left">Medio de Pago</th>
+		                <th class="py-2 px-4 text-left">Descripción</th>
+		                <th class="py-2 px-4 text-left">Pagado</th>
+		            </tr>
+		        </thead>
+		        <tbody class="text-gray-700">
+		            <tr th:each="pago : ${proveedor.pagos}" class="border-b hover:bg-gray-100">
+		                <td th:text="${formattedFechaPago}" class="py-2 px-4"></td> <!-- Usa la variable formattedFechaPago -->
+		                <td th:text="${#numbers.formatDecimal(pago.monto, 1, 2)}" class="py-2 px-4"></td>
+		                <td th:text="${pago.medioDePago}" class="py-2 px-4"></td>
+		                <td th:text="${pago.descripcion}" class="py-2 px-4"></td>
+		                <td th:text="${pago.pagado ? 'Sí' : 'No'}" class="py-2 px-4"></td>
+		            </tr>
+		            <tr th:if="${proveedor.pagos.size() == 0}">
+		                <td colspan="6" class="text-center py-4">No se encontraron pagos.</td>
+		            </tr>
+		        </tbody>
+		    </table>
+		</div>
+
+		    <div th:if="${proveedor.pagos.size() == 0}">
+		        <p>No se encontraron pagos.</p>
+		    </div>
+		</div>
+
+		</div>
+
+        </div>
+
+        <!-- Opción para registrar un nuevo pago -->
+        <div class="mb-4">
+			<a th:href="@{/proveedores/{id}/registrar-pago(id=${proveedor.id})}" 
+			   class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+			    Registrar Pago
+			</a>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Rentabilidad de Productos</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Prueba CSRF -->
+    <meta name="_csrf" content="dummyToken"/>
+    <meta name="_csrf_header" content="X-CSRF-TOKEN"/>
+    <script>
+        function calcularGanancia(idProducto) {
+            console.log(`Calculando ganancias para el producto ID: ${idProducto}`); // Log para depuración
+
+            // Obtener los elementos del DOM
+            const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
+            const precioCompraText = document.getElementById(`precioCompra-${idProducto}`);
+            const cantidadLoteText = document.getElementById(`cantidadLote-${idProducto}`);
+            const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
+            const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
+            const precioVentaText = document.getElementById(`precioVenta-${idProducto}`);
+            const gananciaUnitariaText = document.getElementById(`gananciaUnitaria-${idProducto}`);
+            const gananciaTotalText = document.getElementById(`gananciaTotal-${idProducto}`);
+            const inversionTotalText = document.getElementById(`inversionTotal-${idProducto}`);
+            const dineroTotalRecaudadoText = document.getElementById(`dineroTotalRecaudado-${idProducto}`);
+
+            // Verificar que todos los elementos existen
+            if (rentabilidadInput && precioCompraText && cantidadLoteText && grasaDesperdicioInput && otrosDesperdiciosInput && precioVentaText && gananciaUnitariaText && gananciaTotalText && inversionTotalText && dineroTotalRecaudadoText) {
+                // Obtener valores y convertir a números
+                const porcentajeRentabilidad = parseFloat(rentabilidadInput.value) || 0;
+                const precioCompra = parseFloat(precioCompraText.textContent) || 0;
+                const cantidadLote = parseFloat(cantidadLoteText.textContent) || 0;
+                const grasaDesperdicio = parseFloat(grasaDesperdicioInput.value) || 0;
+                const otrosDesperdicios = parseFloat(otrosDesperdiciosInput.value) || 0;
+
+                // Calcular precio de venta
+                const precioVenta = precioCompra * (1 + porcentajeRentabilidad / 100);
+                precioVentaText.textContent = precioVenta.toFixed(2);
+
+                // Calcular kilos utilizables
+                const kilosUtilizables = Math.max(0, cantidadLote - grasaDesperdicio - otrosDesperdicios);
+
+                // Calcular precio de compra ajustado
+                const precioCompraAjustado = precioCompra * (cantidadLote / kilosUtilizables);
+
+                // Calcular ganancia unitaria y total
+                const gananciaUnitaria = kilosUtilizables > 0 ? (precioVenta - precioCompraAjustado) : 0;
+                const gananciaTotal = kilosUtilizables * gananciaUnitaria;
+
+                // Calcular inversión total
+                const inversionTotal = precioCompra * cantidadLote;
+
+                // Calcular dinero total recaudado
+                const dineroTotalRecaudado = kilosUtilizables * precioVenta;
+
+                // Mostrar resultados en el DOM
+                gananciaUnitariaText.textContent = gananciaUnitaria.toFixed(2);
+                gananciaTotalText.textContent = gananciaTotal.toFixed(2);
+                inversionTotalText.textContent = inversionTotal.toFixed(2);
+                dineroTotalRecaudadoText.textContent = dineroTotalRecaudado.toFixed(2);
+
+                // Enviar datos al servidor para actualizar la base de datos
+                actualizarBaseDeDatos(idProducto, precioVenta, gananciaTotal, porcentajeRentabilidad, gananciaUnitaria, inversionTotal, dineroTotalRecaudado, grasaDesperdicio, otrosDesperdicios);
+            } else {
+                console.error('Faltan algunos elementos necesarios para calcular la ganancia.');
+            }
+        }
+
+        // Obtener los valores de las metas para CSRF
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        function actualizarBaseDeDatos(idProducto, precioVenta, gananciaTotal, porcentajeRentabilidad, gananciaUnitaria, inversionTotal, dineroTotalRecaudado, grasaDesperdicio, otrosDesperdicios) {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", `/productos/${idProducto}/actualizarRentabilidadDatos`, true);
+            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xhr.setRequestHeader(csrfHeader, csrfToken);
+
+            const data = JSON.stringify({
+                porcentajeRentabilidad: porcentajeRentabilidad,
+                precioVenta: precioVenta,
+                gananciaTotal: gananciaTotal,
+                gananciaUnitaria: gananciaUnitaria,
+                inversionTotal: inversionTotal,
+                dineroTotalRecaudado: dineroTotalRecaudado,
+                grasaDesperdicio: grasaDesperdicio,
+                otrosDesperdicios: otrosDesperdicios
+            });
+
+            xhr.send(data);
+
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    console.log('Datos actualizados correctamente.');
+                } else {
+                    console.error('Error al actualizar los datos.');
+                }
+            };
+        }
+
+        function agregarEventos(idProducto) {
+            const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
+            const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
+            const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
+
+            if (rentabilidadInput) {
+                rentabilidadInput.addEventListener('input', () => calcularGanancia(idProducto));
+            } else {
+                console.error(`Elemento rentabilidad-${idProducto} no encontrado`);
+            }
+
+            if (grasaDesperdicioInput) {
+                grasaDesperdicioInput.addEventListener('input', () => calcularGanancia(idProducto));
+            } else {
+                console.error(`Elemento grasaDesperdicio-${idProducto} no encontrado`);
+            }
+
+            if (otrosDesperdiciosInput) {
+                otrosDesperdiciosInput.addEventListener('input', () => calcularGanancia(idProducto));
+            } else {
+                console.error(`Elemento otrosDesperdicios-${idProducto} no encontrado`);
+            }
+        }
+
+        // Calcular ganancias automáticamente al cargar la página
+        window.onload = function() {
+            const productos = document.querySelectorAll('tr[data-id]');
+            productos.forEach(producto => {
+                const idProducto = producto.getAttribute('data-id');
+                agregarEventos(idProducto); // Agregar eventos de cambio
+            });
+        }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased font-sans p-6">
+    <div class="max-w-8xl mx-auto">
+        <h1 class="text-3xl font-bold mb-4 text-center text-blue-600">Rentabilidad de Productos</h1>
+        <p class="mb-6 text-lg" th:text="'Total de productos: ' + ${#lists.size(productos)}"></p>
+
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-blue-600 text-white">
+                    <tr>
+                        <th class="py-2 px-4 text-left">Id</th>
+                        <th class="py-2 px-4 text-left">Nombre</th>
+                        <th class="py-2 px-4 text-left">Categoría</th>
+                        <th class="py-2 px-4 text-left">Precio Compra</th>
+                        <th class="py-2 px-4 text-left">Precio Venta</th>
+                        <th class="py-2 px-4 text-left">Rentabilidad (%)</th>
+                        <th class="py-2 px-4 text-left">Cantidad (kg/u)</th>
+                        <th class="py-2 px-4 text-left">Grasa Desperdicio (kg)</th>
+                        <th class="py-2 px-4 text-left">Otros Desperdicios (kg)</th>
+                        <th class="py-2 px-4 text-left">Ganancia Unitaria</th>
+                        <th class="py-2 px-4 text-left">Ganancia Total</th>
+                        <th class="py-2 px-4 text-left">Inversión Total</th>
+                        <th class="py-2 px-4 text-left">Dinero Total Recaudado</th>
+                        <th class="py-2 px-4 text-left">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    <tr th:each="producto : ${productos}" data-id="${producto.id}" class="border-b hover:bg-gray-100">
+                        <td class="py-2 px-4" th:text="${producto.id}"></td>
+                        <td th:text="${producto.nombre}" class="py-2 px-4">Nombre</td>
+                        <td th:text="${producto.categoria.nombre}" class="py-2 px-4">Categoría</td>
+                        <td th:id="'precioCompra-' + ${producto.id}" th:text="${producto.precioCompra}" class="py-2 px-4">0.00</td>
+                        <td th:id="'precioVenta-' + ${producto.id}" th:text="${producto.precioVenta}" class="py-2 px-4">0.00</td>
+                        <td class="py-2 px-4">
+                            <input type="number" th:id="'rentabilidad-' + ${producto.id}" th:value="${producto.porcentajeRentabilidad}" data-id="${producto.id}" class="border border-gray-300 rounded-md p-1 w-full" />
+                        </td>
+                        <td th:id="'cantidadLote-' + ${producto.id}" th:text="${producto.stock}" class="py-2 px-4">0.00</td>
+                        <td class="py-2 px-4">
+                            <input type="number" th:id="'grasaDesperdicio-' + ${producto.id}"  th:value="${producto.grasaDesperdicio}" data-id="${producto.id}" class="border border-gray-300 rounded-md p-1 w-full" />
+                        </td>
+                        <td class="py-2 px-4">
+                            <input type="number" th:id="'otrosDesperdicios-' + ${producto.id}"  th:value="${producto.otrosDesperdicios}" data-id="${producto.id}" class="border border-gray-300 rounded-md p-1 w-full" />
+                        </td>
+                        <td th:id="'gananciaUnitaria-' + ${producto.id}" th:text="${producto.gananciaUnitaria}" class="py-2 px-4">0.00</td>
+                        <td th:id="'gananciaTotal-' + ${producto.id}" th:text="${producto.gananciaTotal}" class="py-2 px-4">0.00</td>
+                        <td th:id="'inversionTotal-' + ${producto.id}" th:text="${producto.inversionTotal}" class="py-2 px-4">0.00</td>
+                        <td th:id="'dineroTotalRecaudado-' + ${producto.id}" th:text="${producto.dineroTotalRecaudado}" class="py-2 px-4">0.00</td>
+                        <td class="py-2 px-4">
+                            <button type="button" th:onclick="'calcularGanancia(' + ${producto.id} + ')'" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded">Calcular</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

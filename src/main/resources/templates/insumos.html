@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Insumos</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Lista de Insumos</h1>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white shadow-md rounded-lg divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Activo</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <tr th:each="insumo : ${insumos}">
+                        <td th:text="${insumo.id}"></td>
+                        <td th:text="${insumo.nombre ?: ''}"></td> <!-- Si 'nombre' es nulo, muestra vacío -->
+                        <td th:text="${insumo.descripcion ?: ''}"></td> <!-- Si 'descripcion' es nulo, muestra vacío -->
+                        <td th:text="${insumo.precioCompra}"></td>
+                        <td th:text="${insumo.stock}"></td>
+						<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+						                           <form th:action="@{'/insumos/activar/' + ${insumo.id}}" method="post" class="inline">
+						                               <input type="hidden" name="activo" th:value="${!insumo.activo}" />
+						                               <button type="submit" class="text-blue-600 hover:text-blue-900 cursor-pointer">
+						                                   <span th:text="${insumo.activo ? 'Activo' : 'Inactivo'}"></span>
+						                               </button>
+						                           </form>
+						                       </td>
+						<td>
+							
+                            <a th:href="@{/insumos/editar/{id}(id=${insumo.id})}" class="text-blue-500 hover:text-blue-700">Editar</a>
+                            <a th:href="@{/insumos/eliminar/{id}(id=${insumo.id})}" class="text-red-500 hover:text-red-700 ml-4">Eliminar</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Botones para añadir y comprar insumos -->
+        <div class="mt-6 text-center">
+            <a th:href="@{/insumos/crear}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir nuevo insumo</a>
+            <a th:href="@{/compras-insumos}" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded ml-4">Comprar insumo</a>
+        </div>
+    </div>
+</body>
+</html>
