@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,13 +48,25 @@ public class ProductoServiceImpl implements ProductoService {
         logger.info("Obteniendo producto por ID: {}", id);
         return productoRepository.findById(id).orElse(null);
     }
-
+    
+    
     @Override
     @Transactional
     public void guardarProducto(Producto producto) {
+        // Verifica si el producto ya tiene un ID (es decir, es una actualización)
+        if (producto.getId() == null) {
+            // Solo verificar si el código de barras está asociado a otro producto si es un nuevo producto
+            if (producto.getCodigoDeBarras() != null && 
+                productoRepository.findByCodigoDeBarras(producto.getCodigoDeBarras()).isPresent()) {
+                throw new RuntimeException("El código de barras ya está asociado a otro producto.");
+            }
+        }
+
         logger.info("Guardando producto: {}", producto);
         productoRepository.save(producto);
     }
+
+
 
     @Override
     @Transactional
@@ -110,6 +123,13 @@ public class ProductoServiceImpl implements ProductoService {
     public List<Producto> buscarPorCategoriaYActivo(Categoria categoria, boolean activo) {
         logger.info("Buscando productos por categoría: {} y activo: {}", categoria.getNombre(), activo);
         return productoRepository.findByCategoriaAndActivo(categoria, activo);
+    }
+    
+  
+    @Override
+    public Optional<Producto> getProductoByCodigoDeBarras(String codigoDeBarras) {
+        logger.info("Buscando producto con código de barras: {}", codigoDeBarras);
+        return productoRepository.findByCodigoDeBarras(codigoDeBarras);
     }
 
 }

@@ -18,6 +18,7 @@ import com.gestionsimple.sistema_ventas.service.contabilidad.CuentaContableServi
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class CompraController {
@@ -73,6 +75,22 @@ public class CompraController {
         return "crear_compra";
     }
 
+    
+    @GetMapping("/compras/buscarProducto")
+    public String buscarProductoPorCodigoDeBarras(@RequestParam("codigoDeBarras") String codigoDeBarras, Model model) {
+        logger.info("Buscando producto por código de barras: {}", codigoDeBarras);
+        Optional<Producto> productoOpt = productoService.getProductoByCodigoDeBarras(codigoDeBarras);
+
+        if (productoOpt.isPresent()) {
+            model.addAttribute("producto", productoOpt.get());
+        } else {
+            model.addAttribute("error", "Producto no encontrado con el código de barras: " + codigoDeBarras);
+        }
+        
+        return "resultado_busqueda_producto"; // Página que muestra el resultado de la búsqueda
+    }
+
+    
     @PostMapping("/compras")
     public String saveCompra(@ModelAttribute("compra") Compra compra) {
         logger.info("Guardando nueva compra: {}", compra);

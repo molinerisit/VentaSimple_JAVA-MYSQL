@@ -4,6 +4,7 @@ import com.gestionsimple.sistema_ventas.model.Categoria;
 import com.gestionsimple.sistema_ventas.model.Producto;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductoService {
     List<Categoria> obtenerTodasLasCategorias(); // Cambiar a List<Categoria>
@@ -17,4 +18,7 @@ public interface ProductoService {
     void actualizarPrecioCompra(Long id, double newPrecioCompra);
     boolean productoInvolucradoEnVenta(Long id); // Nuevo método
 	List<Producto> buscarPorCategoriaYActivo(Categoria categoria, boolean activo);
+	Optional<Producto> getProductoByCodigoDeBarras(String codigoDeBarras);
 }
+
+

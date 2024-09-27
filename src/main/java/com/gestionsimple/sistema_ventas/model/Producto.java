@@ -38,6 +38,9 @@ public class Producto {
 
     private LocalDate fechaRegistro;
 
+    @Column(nullable = true, unique = true) // nullable si es opcional, unique si quieres que sea único
+    private String codigoDeBarras;
+
     private BigDecimal porcentajeRentabilidad = BigDecimal.ZERO;
     private BigDecimal gananciaTotal = BigDecimal.ZERO;
     private BigDecimal gananciaUnitaria = BigDecimal.ZERO;
@@ -95,6 +98,14 @@ public class Producto {
 
     public void setStock(int stock) {
         this.stock = stock;
+    }
+    
+    public String getCodigoDeBarras() {
+        return codigoDeBarras;
+    }
+
+    public void setCodigoDeBarras(String codigoDeBarras) {
+        this.codigoDeBarras = codigoDeBarras;
     }
 
     public BigDecimal getGrasaDesperdicio() {

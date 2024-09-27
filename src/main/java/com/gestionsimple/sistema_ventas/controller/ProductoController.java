@@ -5,6 +5,7 @@ import com.gestionsimple.sistema_ventas.model.Compra;
 import com.gestionsimple.sistema_ventas.model.DetalleVenta;
 import com.gestionsimple.sistema_ventas.model.Categoria;
 import com.gestionsimple.sistema_ventas.service.ProductoService;
+import com.gestionsimple.sistema_ventas.service.ScannerConfigService;
 import com.gestionsimple.sistema_ventas.service.CategoriaService;
 import com.gestionsimple.sistema_ventas.service.CompraService;
 import com.gestionsimple.sistema_ventas.service.DetalleVentaService;
@@ -43,7 +44,17 @@ public class ProductoController {
 
     @Autowired
     private DetalleVentaService detalleVentaService;
+    
+    private final ScannerConfigService scannerConfigService;  // Asegúrate de declarar el servicio
 
+    @Autowired
+    public ProductoController(ProductoService productoService, 
+                              CategoriaService categoriaService,
+                              ScannerConfigService scannerConfigService) {
+        this.productoService = productoService;
+        this.categoriaService = categoriaService;
+        this.scannerConfigService = scannerConfigService;  // Inyección del servicio
+    }
     // Mostrar todos los productos
     @GetMapping
     public String mostrarProductos(Model model) {
@@ -72,15 +83,24 @@ public class ProductoController {
     }
 
     // Mostrar formulario de creación de producto
+ // Mostrar formulario de creación de producto
     @GetMapping("/crear")
-    public String mostrarFormularioCreacion(Model model) {
-        logger.info("Mostrando formulario de creación de producto");
+    public String mostrarFormularioCreacion(@RequestParam(name = "codigoDeBarras", required = false) String codigoDeBarras, Model model) {
         Producto nuevoProducto = new Producto();
         nuevoProducto.setActivo(true); // Establecer activo por defecto
+        
+        if (codigoDeBarras != null && !codigoDeBarras.isEmpty()) {
+            nuevoProducto.setCodigoDeBarras(codigoDeBarras);
+        }
+
         model.addAttribute("producto", nuevoProducto);
         model.addAttribute("categorias", categoriaService.getAllCategorias());
+
         return "crear_producto";
     }
+
+
+
 
     // Guardar producto
     @PostMapping("/guardar")
@@ -88,6 +108,11 @@ public class ProductoController {
         logger.info("Guardando producto: {}", producto);
         producto.setFechaRegistro(LocalDate.now());
         producto.setActivo(true); // Asegurar que esté activo al guardar
+        if (producto.getCodigoDeBarras() == null || producto.getCodigoDeBarras().isEmpty()) {
+            // Obtener el código de barras escaneado desde el escáner configurado
+            String scannedBarcode = scannerConfigService.readBarcode();
+            producto.setCodigoDeBarras(scannedBarcode);
+        }
         productoService.guardarProducto(producto);
         model.addAttribute("mensaje", "Producto guardado exitosamente");
         return "redirect:/productos";
@@ -192,6 +217,20 @@ public class ProductoController {
         model.addAttribute("productos", productos);
         return "rentabilidad";
     }
+    
+    
+    @GetMapping("/buscarProductoPorCodigo/{codigo}")
+    @ResponseBody
+    public ResponseEntity<Producto> buscarProductoPorCodigo(@PathVariable String codigo) {
+        Optional<Producto> productoOpt = productoService.getProductoByCodigoDeBarras(codigo);
+        if (productoOpt.isPresent()) {
+            return ResponseEntity.ok(productoOpt.get()); // Devuelve el producto encontrado
+        } else {
+            return ResponseEntity.notFound().build(); // Devuelve un 404 si no se encuentra el producto
+        }
+    }
+
+
 
  // Actualizar datos de rentabilidad
     @PostMapping("/{id}/actualizarRentabilidadDatos")

@@ -117,9 +117,11 @@
 			</div>
 
 		</div>
+		
+		<div class="mt-4">
+			<input type="text" id="barcode-input" class="hidden" autofocus />
 
-
-
+		</div>
 
 		<!-- HTML para el modal de monto manual -->
 
@@ -204,6 +206,7 @@
 
 	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<script>
+		
 	
 	function filtrarProductos(categoriaId) {
 	    fetch(`/filtrarProductos/${categoriaId}`)

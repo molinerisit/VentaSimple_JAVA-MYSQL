@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Configure Port</title>
+
+</head>
+<body>
+	<div class="container">
+	    <h1>Configurar Puerto</h1>
+	    <form th:action="@{/barcode/configure}" method="post">
+	        <select name="portName" class="select">
+	            <option th:each="port : ${ports}" th:text="${port}" th:value="${port}" 
+	                th:selected="${port == currentPort}">Puerto</option>
+	        </select>
+	        <br>
+	        <button type="submit" class="button">Configurar</button>
+	    </form>
+	    <div th:if="${message}" class="alert alert-success">
+	        <p th:text="${message}"></p>
+	    </div>
+	</div>
+
+</body>
+</html>
