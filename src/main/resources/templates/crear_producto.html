@@ -1,86 +1,90 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-<title>Crear Producto</title>
-<!-- Tailwind CSS CDN -->
-<link
-	href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
-	rel="stylesheet">
+    <title>Crear Producto</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
-	<div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-		<h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Crear
-			Nuevo Producto</h1>
+    <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Crear Nuevo Producto</h1>
 
-		<form th:action="@{/productos/guardar}" th:object="${producto}"
-			method="post">
-			<!-- Campos del formulario aquí -->
-			<div class="mb-4">
-				<label for="nombre" class="block text-gray-700">Nombre:</label> <input
-					type="text" id="nombre" th:field="*{nombre}" required
-					class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-			</div>
+        <form th:action="@{/productos/guardar}" th:object="${producto}" method="post">
+            <div class="form-group mb-4">
+                <label for="codigoDeBarras">Código de Barras:</label>
+                <input type="text" id="codigoDeBarras" th:field="*{codigoDeBarras}" placeholder="Escanea el código de barras aquí" class="form-control w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required />
+            </div>
+            <div class="mb-4">
+                <label for="nombre" class="block text-gray-700">Nombre:</label>
+                <input type="text" id="nombre" th:field="*{nombre}" required class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
 
-			<div class="mb-4">
-				<label for="descripcion" class="block text-gray-700">Descripción:</label>
-				<input type="text" id="descripcion" th:field="*{descripcion}"
-					class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-			</div>
+            <div class="mb-4">
+                <label for="descripcion" class="block text-gray-700">Descripción:</label>
+                <input type="text" id="descripcion" th:field="*{descripcion}" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
 
-			<div class="mb-4">
-				<label for="categoria" class="block text-gray-700">Categoría:</label>
-				<select id="categoria" th:field="*{categoria.id}"
-					class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-					<option th:each="categoria : ${categorias}"
-						th:value="${categoria.id}" th:text="${categoria.nombre}">Categoría</option>
-				</select>
-			</div>
+            <div class="mb-4">
+                <label for="categoria" class="block text-gray-700">Categoría:</label>
+                <select id="categoria" th:field="*{categoria.id}" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}">Categoría</option>
+                </select>
+            </div>
 
-			<div class="mb-4">
-				<button type="button" id="addCategoryButton"
-					class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md">
-					Agregar Nueva Categoría</button>
-			</div>
+            <div class="mb-4">
+                <button type="button" id="addCategoryButton" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-md">
+                    Agregar Nueva Categoría
+                </button>
+            </div>
 
-			<div class="mb-4">
-				<label for="esPesable"
-					class="inline-flex items-center text-gray-700"> <input
-					type="checkbox" id="esPesable" th:field="*{esPesable}"
-					class="mr-2 focus:ring-2 focus:ring-blue-500" /> Es Pesable
-				</label>
-			</div>
-			
-			<div class="mb-4">
-			    <label for="codigoDeBarras" class="block text-gray-700">Código de Barras (Usa el escáner):</label>
-			    <input type="text" id="codigoDeBarras" th:field="*{codigoDeBarras}" placeholder="Escanea el código de barras aquí" 
-			           class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
-			</div>
+            <div class="mb-4">
+                <label for="esPesable" class="inline-flex items-center text-gray-700">
+                    <input type="checkbox" id="esPesable" th:field="*{esPesable}" class="mr-2 focus:ring-2 focus:ring-blue-500" />
+                    Es Pesable
+                </label>
+            </div>
+            <div class="flex justify-end">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md">
+                    Guardar Producto
+                </button>
+            </div>
+        </form>
+    </div>
 
-			<div class="flex justify-end">
-				<button type="submit"
-					class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md">
-					Guardar Producto</button>
-			</div>
-		</form>
-
-	</div>
-
-	<!-- JavaScript to handle the redirection -->
-	<script th:inline="javascript">
+    <!-- JavaScript to handle the redirection and barcode update -->
+    <script th:inline="javascript">
         /*<![CDATA[*/
         document.getElementById('addCategoryButton').onclick = function() {
             window.location.href = /*[[@{/categorias/nueva}]]*/;
         };
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var codigoDeBarrasInput = document.getElementById("codigoDeBarras");
+            codigoDeBarrasInput.focus();
+
+            // Función para obtener el código de barras escaneado
+            function obtenerCodigoDeBarrasEscaneado() {
+                fetch('/barcode/get-scanned-barcode')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.codigoDeBarras) {
+                            updateCodigoDeBarras(data.codigoDeBarras);
+                        }
+                    })
+                    .catch(error => console.error('Error al obtener el código de barras:', error));
+            }
+
+            // Actualiza el campo de código de barras
+            function updateCodigoDeBarras(code) {
+                const inputField = document.getElementById("codigoDeBarras");
+                inputField.value = code;
+                inputField.dispatchEvent(new Event('input')); // Opcional: dispara el evento de input
+            }
+
+            // Obtener el código de barras de forma periódica
+            setInterval(obtenerCodigoDeBarrasEscaneado, 1000); // Cambia el intervalo según sea necesario
+        });
         /*]]>*/
-		
-		
-		document.addEventListener("DOMContentLoaded", function () {
-		    document.getElementById("codigoDeBarras").focus();
-		});
-
     </script>
-
-
-
 </body>
 </html>

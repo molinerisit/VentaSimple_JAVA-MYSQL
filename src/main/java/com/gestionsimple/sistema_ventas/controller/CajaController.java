@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.gestionsimple.sistema_ventas.dto.ProductoDTO;
 import com.gestionsimple.sistema_ventas.model.Categoria;
 import com.gestionsimple.sistema_ventas.model.DetalleVenta;
 import com.gestionsimple.sistema_ventas.model.Producto;
@@ -161,7 +163,44 @@ public class CajaController {
 		return venta.getTotal() - costoTotal;
 	}
 	
-	
+	@GetMapping("/buscarProductoPorCodigo")
+	@ResponseBody
+	public ProductoDTO buscarProductoPorCodigo(@RequestParam String codigoDeBarras) {
+	    // Log para depuración
+	    System.out.println("Buscando producto con código de barras: " + codigoDeBarras);
+
+	    // Verifica que el código no sea nulo o vacío
+	    if (codigoDeBarras == null || codigoDeBarras.trim().isEmpty()) {
+	        throw new RuntimeException("Código de barras vacío");
+	    }
+
+	    Producto producto = productoService.getProductoByCodigoDeBarras(codigoDeBarras)
+	        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+	    // Log para verificar el producto encontrado
+	    System.out.println("Producto encontrado: " + producto.getNombre());
+
+	    // Convertir la entidad Producto a ProductoDTO
+	    return ProductoDTO.fromEntity(producto);
+	}
+
+
+    @GetMapping("/productos/codigo/{codigo}")
+    @ResponseBody
+    public ResponseEntity<Producto> getProductoByCodigo(@PathVariable String codigo) {
+        // Log for debugging
+        System.out.println("Buscando producto con código: " + codigo);
+        
+        // Retrieve the product by barcode
+        Producto producto = productoService.getProductoByCodigoDeBarras(codigo)
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        // Log for verification
+        System.out.println("Producto encontrado: " + producto.getNombre());
+
+        return ResponseEntity.ok(producto);
+    }
+
 
 	@GetMapping("/logout")
 	public RedirectView logout(HttpServletRequest request, HttpServletResponse response) {
@@ -172,8 +211,5 @@ public class CajaController {
 		return new RedirectView("/login");
 	}
 
-	@GetMapping("/barcode/{codigo}")
-	public RedirectView handleBarcodeScan(@PathVariable String codigo) {
-		return new RedirectView("/nuevo_producto?codigo=" + codigo);
-	}
+
 }

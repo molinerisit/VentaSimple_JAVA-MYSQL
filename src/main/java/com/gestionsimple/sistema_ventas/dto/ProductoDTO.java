@@ -11,6 +11,7 @@ public class ProductoDTO {
     private BigDecimal precioVenta;
     private String categoriaNombre; // Solo nombre de la categoría
     private CategoriaDTO categoria;
+    private String codigoDeBarras;
 
     // Getters y Setters
     public Long getId() {
@@ -53,21 +54,31 @@ public class ProductoDTO {
         this.categoriaNombre = categoriaNombre;
     }
 
-    /**
-     * Convierte una entidad Producto a un DTO ProductoDTO.
-     * 
-     * @param producto La entidad Producto a convertir.
-     * @return El DTO ProductoDTO correspondiente.
-     */
+    public String getCodigoDeBarras() {
+        return codigoDeBarras;
+    }
+
+    public void setCodigoDeBarras(String codigoDeBarras) {
+        this.codigoDeBarras = codigoDeBarras;
+    }
+
     public static ProductoDTO fromEntity(Producto producto) {
         ProductoDTO dto = new ProductoDTO();
         dto.setId(producto.getId());
         dto.setNombre(producto.getNombre());
         dto.setDescripcion(producto.getDescripcion());
         dto.setPrecioVenta(producto.getPrecioVenta());
-        dto.setCategoriaNombre(producto.getCategoria().getNombre()); // Asegúrate de que la categoría no sea null
+        dto.setCategoriaNombre(producto.getCategoria().getNombre());
+        dto.setCodigoDeBarras(producto.getCodigoDeBarras());
         return dto;
     }
+    /**
+     * Convierte una entidad Producto a un DTO ProductoDTO.
+     * 
+     * @param producto La entidad Producto a convertir.
+     * @return El DTO ProductoDTO correspondiente.
+     */
+  
 
 	public CategoriaDTO getCategoria() {
 		return categoria;

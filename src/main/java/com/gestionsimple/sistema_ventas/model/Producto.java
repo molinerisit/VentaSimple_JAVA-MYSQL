@@ -51,8 +51,10 @@ public class Producto {
     private String descripcion;
     private boolean activo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    //@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id") // Asegúrate de que la columna coincida con tu base de datos
+    @ManyToOne(fetch = FetchType.EAGER)
+
     private Categoria categoria;
 
     @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)

@@ -126,10 +126,20 @@ public class ProductoServiceImpl implements ProductoService {
     }
     
   
-    @Override
     public Optional<Producto> getProductoByCodigoDeBarras(String codigoDeBarras) {
         logger.info("Buscando producto con código de barras: {}", codigoDeBarras);
-        return productoRepository.findByCodigoDeBarras(codigoDeBarras);
+
+        // Búsqueda en el repositorio
+        Optional<Producto> producto = productoRepository.findByCodigoDeBarras(codigoDeBarras);
+
+        if (producto.isPresent()) {
+            logger.info("Producto encontrado: {}", producto.get().getNombre());
+        } else {
+            logger.warn("Producto con código de barras {} no encontrado", codigoDeBarras);
+        }
+
+        return producto;
     }
+   
 
 }

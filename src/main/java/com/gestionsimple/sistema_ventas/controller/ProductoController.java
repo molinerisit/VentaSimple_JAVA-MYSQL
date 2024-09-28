@@ -87,21 +87,38 @@ public class ProductoController {
     @GetMapping("/crear")
     public String mostrarFormularioCreacion(@RequestParam(name = "codigoDeBarras", required = false) String codigoDeBarras, Model model) {
         Producto nuevoProducto = new Producto();
-        nuevoProducto.setActivo(true); // Establecer activo por defecto
-        
+        nuevoProducto.setActivo(true);
+
         if (codigoDeBarras != null && !codigoDeBarras.isEmpty()) {
             nuevoProducto.setCodigoDeBarras(codigoDeBarras);
         }
 
+        System.out.println("Código de Barras: " + nuevoProducto.getCodigoDeBarras()); // Verificar el valor aquí
+        
         model.addAttribute("producto", nuevoProducto);
         model.addAttribute("categorias", categoriaService.getAllCategorias());
 
         return "crear_producto";
     }
 
+    
+    @GetMapping("/buscarPorCodigoDeBarras")
+    public ResponseEntity<Producto> buscarProductoPorCodigoDeBarras(@RequestParam String codigoDeBarras) {
+        Optional<Producto> producto = productoService.getProductoByCodigoDeBarras(codigoDeBarras);
+        
+        return producto.map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
+    @GetMapping("/api/get-scanned-barcode")
+    @ResponseBody
+    public ResponseEntity<String> getScannedBarcode() {
+        // Lógica para obtener el código de barras escaneado
+        String scannedBarcode = scannerConfigService.readBarcode(); // Asegúrate de que este método esté bien implementado
+        return ResponseEntity.ok(scannedBarcode);
+    }
 
-
+    
     // Guardar producto
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute("producto") Producto producto, Model model) {
