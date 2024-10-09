@@ -6,8 +6,16 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <div class=" mx-auto py-6 sm:px-6 lg:px-8">
         <h1 class="text-3xl font-bold mb-6 text-center text-blue-600">Lista de Productos</h1>
+		<div class="mt-6 text-center">
+		    <div th:if="${alertaAgotado}" class="bg-red-300 text-red-800 p-4 rounded mb-4">
+		        <strong>¡Alerta!</strong> Hay productos agotados.
+		    </div>
+		    <div th:if="${alertaBajoStock}" class="bg-yellow-300 text-yellow-800 p-4 rounded mb-4">
+		        <strong>¡Alerta!</strong> Hay productos con bajo stock (menos de 3 unidades).
+		    </div>
+		</div>
 
         <div class="overflow-x-auto">
             <table class="min-w-full bg-white shadow-md rounded-lg divide-y divide-gray-200">

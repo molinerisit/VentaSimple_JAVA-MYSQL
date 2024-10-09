@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Configurar Impresora</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@3.0.0/dist/tailwind.min.css">
+</head>
+<body>
+    <div class="container mx-auto mt-10">
+        <h1 class="text-2xl font-bold mb-5">Configurar Puerto de Impresora</h1>
+        <form th:action="@{/print/configure}" method="post">
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700">Puerto de Impresora</label>
+                <select name="portName" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option th:each="port : ${ports}" th:value="${port}" th:text="${port}" th:selected="${port == currentPort}"></option>
+                </select>
+            </div>
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Configurar
+            </button>
+        </form>
+		<form th:action="@{/print/printTest}" method="post">
+		    <div class="mb-4">
+		        <label class="block text-sm font-medium text-gray-700">Contenido del Recibo</label>
+		        <textarea name="receiptData" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+		    </div>
+		    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+		        Imprimir Recibo de Prueba
+		    </button>
+		</form>
+
+        <div th:if="${message}" class="mt-5 text-green-600">
+            <p th:text="${message}"></p>
+        </div>
+    </div>
+</body>
+</html>

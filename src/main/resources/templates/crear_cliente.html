@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Crear Cliente</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Crear Nuevo Cliente</h1>
+
+		<form th:action="@{/clientes/crear}" method="post" th:object="${cliente}">
+		    <div class="mb-4">
+		        <label for="dni" class="block text-gray-700">DNI:</label>
+		        <input type="text" id="dni" name="dni" th:field="*{dni}" class="w-full p-2 border border-gray-300 rounded-md" required />
+		    </div>
+		    <div class="mb-4">
+		        <label for="nombre" class="block text-gray-700">Nombre:</label>
+		        <input type="text" id="nombre" name="nombre" th:field="*{nombre}" class="w-full p-2 border border-gray-300 rounded-md" required />
+		    </div>
+		    <div class="mb-4">
+		        <label for="apellido" class="block text-gray-700">Apellido:</label>
+		        <input type="text" id="apellido" name="apellido" th:field="*{apellido}" class="w-full p-2 border border-gray-300 rounded-md" required />
+		    </div>
+		    <div class="mb-4">
+		        <label for="telefono" class="block text-gray-700">Teléfono:</label>
+		        <input type="text" id="telefono" name="telefono" th:field="*{telefono}" class="w-full p-2 border border-gray-300 rounded-md" required />
+		    </div>
+		    <div class="mb-4">
+		        <label for="direccion" class="block text-gray-700">Dirección:</label>
+		        <input type="text" id="direccion" name="direccion" th:field="*{direccion}" class="w-full p-2 border border-gray-300 rounded-md" required />
+		    </div>
+		    <div class="mb-4">
+		        <label for="descuento" class="block text-gray-700">Descuento:</label>
+		        <input type="number" id="descuento" name="descuento" th:field="*{descuento}" class="w-full p-2 border border-gray-300 rounded-md" />
+		    </div>
+		    <div class="mb-4">
+		        <label for="esNegocio" class="block text-gray-700">Es Negocio:</label>
+		        <input type="checkbox" id="esNegocio" name="esNegocio" th:field="*{esNegocio}" />
+		    </div>
+		    <button type="submit" class="bg-blue-500 text-white p-2 rounded">Registrar Cliente</button>
+		</form>
+
+    </div>
+</body>
+</html>

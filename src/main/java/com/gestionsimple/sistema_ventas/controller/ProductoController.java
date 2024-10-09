@@ -60,9 +60,19 @@ public class ProductoController {
     public String mostrarProductos(Model model) {
         logger.info("Mostrando todos los productos");
         List<Producto> productos = productoService.obtenerTodosLosProductos();
+        
+        boolean alertaBajoStock = false; // Variable para verificar si hay productos con bajo stock
+        boolean alertaAgotado = false; // Variable para verificar si hay productos agotados
 
         for (Producto producto : productos) {
             logger.info("Producto: {} - Precio de venta: {}", producto.getNombre(), producto.getPrecioVenta());
+
+            // Verificar stock y establecer alertas
+            if (producto.getStock() <= 1) {
+                alertaAgotado = true; // Hay productos agotados
+            } else if (producto.getStock() <= 3) {
+                alertaBajoStock = true; // Hay productos con bajo stock
+            }
 
             if (producto.getPrecioCompra().compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal diferencia = producto.getPrecioVenta().subtract(producto.getPrecioCompra());
@@ -79,6 +89,8 @@ public class ProductoController {
         }
 
         model.addAttribute("productos", productos);
+        model.addAttribute("alertaBajoStock", alertaBajoStock);
+        model.addAttribute("alertaAgotado", alertaAgotado);
         return "productos";
     }
 
@@ -331,5 +343,32 @@ public class ProductoController {
     }
 
 
+    @GetMapping("/gestionStock")
+    public String mostrarGestionStock(Model model) {
+        logger.info("Mostrando gestión de stock");
+        List<Producto> productos = productoService.obtenerTodosLosProductos();
+        
+        boolean alertaBajoStock = false; // Variable para verificar si hay productos con bajo stock
+        boolean alertaAgotado = false; // Variable para verificar si hay productos agotados
 
+        for (Producto producto : productos) {
+            logger.info("Producto: {} - Precio de venta: {}", producto.getNombre(), producto.getPrecioVenta());
+
+            // Verificar stock y establecer alertas
+            if (producto.getStock() <= 1) {
+                alertaAgotado = true; // Hay productos agotados
+            } else if (producto.getStock() <= 3) {
+                alertaBajoStock = true; // Hay productos con bajo stock
+            }
+
+            // Otros cálculos relacionados con el producto si es necesario
+        }
+
+        model.addAttribute("productos", productos);
+        model.addAttribute("alertaBajoStock", alertaBajoStock);
+        model.addAttribute("alertaAgotado", alertaAgotado);
+        return "GestionStock"; // Retorna la vista adecuada
+    }
+
+    
 }

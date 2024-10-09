@@ -17,27 +17,24 @@ public class Venta {
 
     private String metodoPago;
     
+    private String dniCliente;  // Correspondiente al 'dni-cliente'
+
     private LocalDateTime fechaHora;
-
-    private double total; // Total de la venta
-
-    private double montoPagado; // Monto pagado por el cliente
-
-    private double vuelto; // Vuelto a entregar al cliente
-
+    private double total; // Correspondiente al 'total-venta'
+    private double montoPagado; // Correspondiente al 'monto-pagado-input'
+    private double vuelto; // Correspondiente al 'vuelto'
     private String fechaHoraFormatted; // Campo para la fecha formateada
+    private double montoDescuento; // Correspondiente al 'monto-descuento'
+    private double recargo; // Correspondiente al monto de recargo
+    private double subtotalSinDescuentos; // Correspondiente al 'subtotal-sin-descuentos'
 
-    
     @ManyToMany
     private List<Producto> productos;
+    
+    @ManyToOne
+    @JoinColumn(name = "cliente_id", nullable = true)
+    private Cliente cliente;
 
-    public List<Producto> getProductos() {
-        return productos;
-    }
-
-    public void setProductos(List<Producto> productos) {
-        this.productos = productos;
-    }
     // Getters y Setters
     public Long getId() {
         return id;
@@ -95,12 +92,59 @@ public class Venta {
         this.vuelto = vuelto;
     }
 
-	public String getFechaHoraFormatted() {
-		return fechaHoraFormatted;
+    public String getFechaHoraFormatted() {
+        return fechaHoraFormatted;
+    }
+
+    public void setFechaHoraFormatted(String fechaHoraFormatted) {
+        this.fechaHoraFormatted = fechaHoraFormatted;
+    }
+
+    public double getMontoDescuento() {
+        return montoDescuento;
+    }
+
+    public void setMontoDescuento(double montoDescuento) {
+        this.montoDescuento = montoDescuento;
+    }
+
+    public double getSubtotalSinDescuentos() {
+        return subtotalSinDescuentos;
+    }
+
+    public void setSubtotalSinDescuentos(double subtotalSinDescuentos) {
+        this.subtotalSinDescuentos = subtotalSinDescuentos;
+    }
+
+    public String getDniCliente() {
+        return dniCliente;
+    }
+
+    public void setDniCliente(String dniCliente) {
+        this.dniCliente = dniCliente;
+    }
+
+    public List<Producto> getProductos() {
+        return productos;
+    }
+
+    public void setProductos(List<Producto> productos) {
+        this.productos = productos;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+	public double getRecargo() {
+		return recargo;
 	}
 
-	public void setFechaHoraFormatted(String fechaHoraFormatted) {
-		this.fechaHoraFormatted = fechaHoraFormatted;
+	public void setRecargo(double recargo) {
+		this.recargo = recargo;
 	}
-    
 }

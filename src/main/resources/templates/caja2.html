@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Caja</title>
+<link
+	href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+	rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+	<div class="container mx-auto py-8 px-4">
+		<h1 class="text-3xl font-bold mb-8">Caja</h1>
+		<!-- Usuario y Logout -->
+			<div class="flex justify-between items-center mb-4">
+				<p class="text-lg">Bienvenido, <span th:text="${nombreUsuario}"></span></p>
+				<form th:action="@{/logout}" method="post">
+					<button type="submit"
+						class="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 transition duration-300">
+						Cerrar sesión
+					</button>
+				</form>
+			</div>
+
+		<div class="mt-4">
+			<p>
+				Hora actual: <span id="current-time"></span>
+			</p>
+			<p>
+				Tiempo de caja abierta: <span id="time-elapsed"></span>
+			</p>
+		</div>
+	<div class="space-y-6">
+  <!-- Escanear Código de Barras -->
+  <div>
+    <label for="codigoDeBarras" class="block font-semibold mb-2">Escanear Código de Barras:</label>
+    <input type="text" id="codigoDeBarras" placeholder="Escanea el código de barras aquí" class="form-control w-full px-3 py-2 border rounded-md" />
+  </div>
+  <!-- Productos Seleccionados -->
+  <div class="border border-gray-200 rounded-lg">
+	<h2 class="text-xl font-semibold bg-gray-200 py-3 px-6">Productos Seleccionados</h2>
+	<div class="p-6">
+	    <div id="productos-seleccionados" class="overflow-y-auto max-h-80">
+	        <table class="min-w-full divide-y divide-gray-200">
+	            <thead>
+	                <tr class="bg-gray-50">
+	                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+	                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descripción</th>
+	                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Precio Unitario</th>
+	                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+	                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+	                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+	                </tr>
+	            </thead>
+	            <tbody id="tabla-productos-seleccionados">
+	                <tr th:each="detalle, indexStat : ${productosSeleccionados}">
+	                    <td th:text="${detalle.nombreProducto}"></td>
+	                    <td th:text="${detalle.descripcion}"></td>
+	                    <td th:text="${detalle.precioUnitario}"></td>
+	                    <td>
+	                        <input type="number" min="1" th:value="${detalle.cantidad}" onchange="cambiarCantidad(${indexStat.index}, this.value)" class="border rounded px-2 py-1 w-16" />
+	                    </td>
+	                    <td th:text="${detalle.subtotal}"></td>
+	                    <td>
+	                        <button onclick="eliminarProducto(${indexStat.index})" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
+	                    </td>
+	                </tr>
+	            </tbody>
+	        </table>
+	    </div>
+		<div class="mt-4 text-right">
+				<div class="mt-4 text-right">
+				    <span class="text-lg font-semibold">Subtotal sin descuentos: $<span id="subtotal-sin-descuentos">0.00</span></span>
+				</div>
+				<div class="mt-4 text-right">
+				    <span class="text-lg font-semibold">Descuentos y promociones: $<span id="monto-descuento" class="text-red-500">0.00</span></span>
+				</div>
+				<div class="mt-4 text-right">
+				    <span class="text-lg font-semibold">Total: $<span id="total-venta" class="text-red-500">0.00</span></span>
+				</div>
+				<div class="mt-4 text-right">
+				    <span class="text-lg font-semibold">Monto Pagado: $<span id="monto-pagado-display" class="text-red-500">0.00</span></span>
+				</div>
+				<div class="mt-4 text-right">
+				    <span class="text-lg font-semibold">Vuelto: $<span id="vuelto" class="text-red-500"></span></span>
+				</div>
+
+			      </div>
+	</div>
+
+	<!-- Botones de Categorías y Productos -->
+	<div class="mb-6">
+	    <div class="flex flex-wrap gap-2 mb-4">
+	        <div th:each="categoria : ${categorias}">
+	            <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300" 
+	                    th:text="${categoria.nombre}" 
+	                    th:onclick="'filtrarProductos(' + ${categoria.id} + ')'">
+	            </button>
+	        </div>
+	        <button id="btn-mostrar-modal"
+	                class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300">
+	            Ingresar Monto Manualmente
+	        </button>
+	    </div>
+	    <h2 class="text-xl font-semibold mb-4">Productos</h2>
+	    <div id="productos" class="space-y-4"></div>
+	</div>
+
+	<!-- Modal para ingresar monto manualmente -->
+	<div id="modal-monto" class="fixed z-10 inset-0 overflow-y-auto hidden">
+	    <div class="flex items-center justify-center min-h-screen bg-black bg-opacity-50">
+	        <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+	            <!-- Título del modal -->
+	            <h2 class="text-xl font-semibold mb-4 text-center">Ingresar Monto Manualmente</h2>
+	            <!-- Entrada para ingresar monto -->
+	            <input type="number" id="monto-manual" placeholder="Ingrese un monto" class="mt-4 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+	            <!-- Botón para guardar el monto -->
+	            <button id="btn-guardar-monto" onclick="guardarMontoManual()" class="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded-md transition duration-200">
+	                Guardar
+	            </button>
+	            <!-- Botón para cerrar modal -->
+	            <button id="btn-cerrar-modal" class="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded-md transition duration-200">
+	                Cerrar    
+	            </button>
+	        </div>
+	    </div>
+	</div>
+
+	<div class="mb-6">
+	    <label for="dni" class="block font-semibold mb-2">DNI del Cliente:</label>
+	    <input type="text" id="dni-cliente" class="form-control w-full px-3 py-2 border rounded-md" placeholder="Ingresa el DNI del cliente" />
+	    <button id="btn-aplicar-descuento" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300 mt-4">Aplicar Descuento</button>
+	</div>
+
+	<!-- Botones para Método de Pago -->
+	<div class="mt-8">
+	    <h2 class="text-xl font-semibold mb-2">Método de Pago</h2>
+	    <div class="flex space-x-4">
+	        <button
+	            class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
+	            onclick="seleccionarMetodoPago('EFECTIVO')">Efectivo</button>
+	        <button
+	            class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
+	            onclick="seleccionarMetodoPago('TARJETA')">Tarjeta</button>
+	        <button
+	            class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
+	            onclick="seleccionarMetodoPago('QR')">QR</button>
+	    </div>
+	    
+	    
+
+		<div id="campo-monto-pagado" class="mt-4 hidden max-w-xs">
+		    <label for="monto-pagado-input" class="block text-lg font-medium text-gray-700 mb-2">Monto Pagado:</label>
+		    <div class="flex items-center bg-gray-200 rounded-md">
+		        <span class="text-gray-600 px-3">$</span> 
+		        <input type="text" id="monto-pagado-input" class="block w-full px-3 py-2 text-lg rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-transparent appearance-none">
+		    </div>
+		</div>
+
+	 
+	</div>
+
+	<div class="mt-8">
+	    <button id="btn-registrar-venta" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300">Registrar Venta</button>
+	</div>
+
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script>
+		
+		
+		document.getElementById('btn-aplicar-descuento').addEventListener('click', function() {
+		    const dni = document.getElementById('dni-cliente').value;
+		    console.log("DNI del cliente:", dni); // Verifica el DNI
+
+		    axios.get(`/clientes/dni/${dni}`)
+		        .then(response => {
+		            console.log("Respuesta del servidor:", response.data); // Verifica la respuesta
+
+		            if (response.data) {
+		                const descuento = response.data.descuento;
+		                if (!isNaN(descuento) && descuento !== null) {
+		                    aplicarDescuento(descuento);
+		                } else {
+		                    alert('El cliente no tiene un descuento válido');
+		                }
+		            } else {
+		                alert('Cliente no encontrado');
+		            }
+		        })
+		        .catch(error => console.error('Error al obtener cliente:', error));
+		});
+
+
+		function aplicarDescuento(descuento) {
+		    let total = parseFloat(document.getElementById('total-venta').textContent.replace(/[^0-9.-]+/g, "")); // Limpiar el valor
+		    console.log("Valor total antes de aplicar el descuento:", total); // Verificar el valor del total
+		    if (!isNaN(total)) {
+		        const descuentoAplicado = total * (descuento / 100);
+		        total = total - descuentoAplicado;
+		        document.getElementById('total-final').textContent = total.toFixed(2);
+		        document.getElementById('monto-descuento').textContent = descuentoAplicado.toFixed(2); // Mostrar el monto de descuento
+		        document.getElementById('total-venta').dataset.descuento = descuentoAplicado; // Guardar el descuento aplicado
+		    } else {
+		        alert('El total de la venta no es un valor numérico válido');
+		    }
+		}
+
+	    
+		// Llama a la API para obtener el código escaneado
+		function obtenerCodigoDeBarrasEscaneado() {
+		    fetch('/barcode/get-scanned-barcode')
+		        .then(response => response.json())
+		        .then(data => {
+		            if (data.codigoDeBarras) {
+		                updateCodigoDeBarras(data.codigoDeBarras);
+		            }
+		        })
+		        .catch(error => console.error('Error al obtener el código de barras:', error));
+		}
+		
+		function updateCodigoDeBarras(code) {
+		    const inputField = document.getElementById("codigoDeBarras");
+		    inputField.value = code; // Actualiza el valor del campo
+		    inputField.dispatchEvent(new Event('input')); // Dispara el evento de input si necesitas que se ejecute el listener
+		}
+		// Llama a esta función cada 500 ms (ajusta según tus necesidades)
+		setInterval(obtenerCodigoDeBarrasEscaneado, 500);
+		// Actualiza el campo de entrada
+		document.getElementById('codigoDeBarras').addEventListener('input', function(event) {
+		    const codigoBarras = this.value.trim();
+		    if (codigoBarras.length === 13) { // Asegúrate de que la longitud es la esperada
+		        buscarProductoPorCodigo(codigoBarras);
+		        this.value = ''; // Limpiar el campo después de escanear
+		    }
+		});
+		// Función para abrir el modal de monto manual
+		document.getElementById('btn-mostrar-modal').addEventListener('click', function() {
+			document.getElementById('modal-monto').classList.remove('hidden');
+		});
+
+		// Función para cerrar el modal
+		document.getElementById('btn-cerrar-modal').addEventListener('click', function() {
+			document.getElementById('modal-monto').classList.add('hidden');
+		});
+		
+		let productosSeleccionados = [];
+	    let metodoPago = '';
+		// Función para guardar el monto manual y agregar el producto a la lista
+		function guardarMontoManual() {
+		    console.log("Botón 'Guardar' fue clickeado"); // Agrega este log
+		    
+		    const monto = parseFloat(document.getElementById('monto-manual').value);
+		    if (isNaN(monto) || monto <= 0) {
+		        alert("Por favor, ingrese un monto válido.");
+		        return;
+		    }
+		    
+		    const productoManual = {
+		        nombreProducto: "Ingresado Manualmente",
+		        descripcion: "Este producto fue ingresado manualmente",
+		        precioUnitario: monto,
+		        cantidad: 1,
+		        subtotal: monto
+		    };
+
+		    productosSeleccionados.push(productoManual);
+
+		    // Actualiza la tabla
+		    actualizarTablaProductosSeleccionados();
+
+		    // Cierra el modal
+		    document.getElementById('modal-monto').classList.add('hidden');
+
+		    // Limpia el campo de monto
+		    document.getElementById('monto-manual').value = '';
+		}
+
+	    function buscarProductoPorCodigo(codigoBarras) {
+	        console.log("Buscando producto con código:", codigoBarras);
+	        axios.get(`/productos/codigo/${codigoBarras}`)
+	            .then(response => {
+	                console.log("Respuesta del servidor:", response.data);
+	                if (response.data) {
+	                    agregarProductoSeleccionado(response.data);
+	                } else {
+	                    alert('Producto no encontrado');
+	                }
+	            })
+	            .catch(error => {
+	                console.error('Error al buscar el producto:', error);
+	                alert('Error al buscar el producto.');
+	            });
+	    }
+		
+		document.addEventListener("DOMContentLoaded", function () {
+		    const codigoDeBarrasInput = document.getElementById("codigoDeBarras");
+		    codigoDeBarrasInput.focus();
+		});
+		document.getElementById('codigoDeBarras').focus();
+		document.getElementById('codigoDeBarras').addEventListener('input', function(event) {
+		    const codigoBarras = this.value.trim();
+		    if (codigoBarras.length === 13) { // Ajusta si es necesario
+		        buscarProductoPorCodigo(codigoBarras);
+		        this.value = ''; // Limpiar el campo después de escanear
+		    }
+		});
+
+	    function filtrarProductos(categoriaId) {
+	        fetch(`/filtrarProductos/${categoriaId}`)
+	            .then(response => response.json())
+	            .then(productos => {
+	                const productosDiv = document.getElementById('productos');
+	                productosDiv.innerHTML = ''; // Limpiar productos anteriores
+	                
+	                // Si no hay productos
+	                if (productos.length === 0) {
+	                    productosDiv.innerHTML = '<p>No hay productos disponibles para esta categoría.</p>';
+	                } else {
+	                    productos.forEach(producto => {
+	                        const productoElement = document.createElement('button');
+	                        productoElement.className = 'p-4 bg-white shadow rounded-lg btn-producto';
+	                        
+	                        const stockMensaje = producto.stock > 0 ? `Stock: ${producto.stock}` : 'No disponible';
+	                        productoElement.innerHTML = `
+	                            <h3 class="text-lg font-semibold">${producto.nombre}</h3>
+	                            <p>Precio: $${producto.precioVenta}</p>
+	                            <p>${stockMensaje}</p>
+	                        `;
+	                        
+	                        if (producto.stock === 0) {
+	                            productoElement.disabled = true;
+	                            productoElement.classList.add('bg-gray-300', 'cursor-not-allowed');
+	                        } else {
+	                            productoElement.onclick = () => agregarProductoSeleccionado(producto);
+	                        }
+
+	                        productosDiv.appendChild(productoElement);
+	                    });
+	                }
+	            })
+	            .catch(error => console.error('Error:', error));
+	    }
+	    document.querySelectorAll('button[data-categoria]').forEach(button => {
+	        button.addEventListener('click', () => {
+	            const categoria = button.getAttribute('data-categoria');
+	            cargarProductosPorCategoria(categoria);
+	        });
+	    });
+	    document.getElementById('btn-registrar-venta').addEventListener('click', () => {
+	        registrarVenta();
+	    });
+	    function cargarProductosPorCategoria(categoria) {
+	        axios.get(`/productos/categoria/${categoria}`)
+	            .then(response => {
+	                mostrarProductos(response.data);
+	            });
+	    }
+	    function mostrarProductos(productos) {
+	        const contenedorProductos = document.getElementById('productos');
+	        contenedorProductos.innerHTML = '';
+	        productos.forEach(producto => {
+	            const productoBtn = document.createElement('button');
+	            productoBtn.classList.add('bg-gray-300', 'rounded-lg', 'py-2', 'px-4', 'hover:bg-gray-400', 'transition', 'duration-300', 'btn-producto');
+	            productoBtn.textContent = `${producto.nombre} - $${producto.precioVenta}`;
+	            productoBtn.addEventListener('click', () => {
+	                agregarProductoSeleccionado(producto);
+	            });
+	            contenedorProductos.appendChild(productoBtn);
+	        });
+	    }
+	    function agregarProductoSeleccionado(producto) {
+	        const encontrado = productosSeleccionados.find(item => item.producto.id === producto.id);
+
+	        if (encontrado) {
+	            encontrado.cantidad++;
+	            encontrado.subtotal = encontrado.cantidad * encontrado.precioUnitario;
+	        } else {
+	            const detalleVenta = {
+	                producto: { id: producto.id },
+	                nombreProducto: producto.nombre,
+	                descripcion: producto.descripcion,
+	                precioUnitario: producto.precioVenta, // Asegúrate de usar el precio correcto
+	                cantidad: 1,
+	                subtotal: producto.precioVenta
+	            };
+	            productosSeleccionados.push(detalleVenta);
+	        }
+	        actualizarTablaProductosSeleccionados();
+	    }
+		function actualizarTablaProductosSeleccionados() {
+		    const tablaProductos = document.getElementById('tabla-productos-seleccionados');
+		    tablaProductos.innerHTML = '';
+		    let total = 0;
+		    productosSeleccionados.forEach((detalle, index) => {
+		        total += detalle.subtotal;
+		        const fila = document.createElement('tr');
+		        fila.innerHTML = `
+		            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${detalle.nombreProducto}</td>
+		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${detalle.descripcion}</td>
+		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${detalle.precioUnitario}</td>
+		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+		                <input type="number" min="1" value="${detalle.cantidad}" class="cantidad-input" data-index="${index}">
+		            </td>
+		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${detalle.subtotal.toFixed(2)}</td>
+		            <td>
+		                <button onclick="eliminarProducto(${index})" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
+		            </td>
+		        `;
+		        tablaProductos.appendChild(fila);
+		    });
+		    document.getElementById('total-venta').textContent = total.toFixed(2);
+		    // Agregar evento de cambio a todos los inputs de cantidad
+		    document.querySelectorAll('.cantidad-input').forEach(input => {
+		        input.addEventListener('input', (event) => {
+		            const index = event.target.dataset.index;
+		            const nuevaCantidad = parseInt(event.target.value, 10);
+		            if (!isNaN(nuevaCantidad) && nuevaCantidad > 0) {
+		                productosSeleccionados[index].cantidad = nuevaCantidad;
+		                productosSeleccionados[index].subtotal = nuevaCantidad * productosSeleccionados[index].precioUnitario;
+		                actualizarTablaProductosSeleccionados(); // Actualiza la tabla para reflejar el cambio
+		            }
+		        });
+		    });
+		}
+	    function calcularVuelto(montoPagado, total) {
+	        return montoPagado - total;
+	    }
+		
+		// Ajusta la función registrarVenta para usar el nuevo campo
+		function registrarVenta() {
+		    let totalVenta = 0;
+		    if (productosSeleccionados.length > 0) {
+		        totalVenta = productosSeleccionados.reduce((total, detalle) => total + detalle.subtotal, 0);
+		    }
+
+		    const descuentoAplicado = parseFloat(document.getElementById('monto-descuento').textContent) || 0;
+		    const totalFinal = totalVenta - descuentoAplicado;
+
+		    const montoPagado = (metodoPago === 'TARJETA' || metodoPago === 'QR') ? totalFinal : parseFloat(document.getElementById('monto-pagado-input').value) || 0;
+
+		    const vuelto = calcularVuelto(montoPagado, totalFinal);
+		    const dniCliente = document.getElementById('dni-cliente').value.trim();
+
+		    const venta = {
+		        detallesVenta: productosSeleccionados,
+		        metodoPago: metodoPago,
+		        total: totalVenta,
+		        montoPagado: metodoPago === 'EFECTIVO' ? montoPagado : totalFinal,
+		        vuelto: metodoPago === 'EFECTIVO' ? vuelto : 0,
+		        descuento: descuentoAplicado,
+		        dniCliente: dniCliente
+		    };
+
+		    console.log('Detalles de la venta:', JSON.stringify(venta, null, 2));
+		    axios.post('/ventas', venta)
+		        .then(response => {
+		            alert(response.data);
+		            productosSeleccionados = [];
+		            actualizarTablaProductosSeleccionados();
+		            document.getElementById('total-venta').textContent = '0.00';
+		            document.getElementById('monto-pagado-input').value = '';
+		            document.getElementById('monto-pagado-display').textContent = '0.00'; // Resetea el display
+		            document.getElementById('vuelto').textContent = '';
+		            document.getElementById('monto-manual').value = '';
+		            document.getElementById('dni-cliente').value = '';
+		        })
+		        .catch(error => {
+		            console.error(error);
+		            alert('Error al registrar la venta.');
+		        });
+		}
+
+
+		// Evento para el campo de monto pagado
+		document.getElementById('monto-pagado-input').addEventListener('input', () => {
+		    const totalVenta = parseFloat(document.getElementById('total-venta').textContent);
+		    const descuentoAplicado = parseFloat(document.getElementById('monto-descuento').textContent) || 0;
+		    const totalFinal = totalVenta - descuentoAplicado;
+
+		    const montoPagadoInput = parseFloat(document.getElementById('monto-pagado-input').value) || 0;
+
+		    // Si el método de pago es tarjeta o QR, ajusta el campo de monto pagado a total final
+		    if (metodoPago === 'TARJETA' || metodoPago === 'QR') {
+		        document.getElementById('monto-pagado-input').value = totalFinal.toFixed(2);
+		        document.getElementById('monto-pagado-display').textContent = totalFinal.toFixed(2);
+		    } else {
+		        // Actualiza el monto pagado visualizado
+		        document.getElementById('monto-pagado-display').textContent = montoPagadoInput.toFixed(2);
+		    }
+
+		    // Calcula el vuelto
+		    const vuelto = calcularVuelto(montoPagadoInput, totalFinal);
+		    document.getElementById('vuelto').textContent = vuelto.toFixed(2);
+		});
+
+	    function eliminarProducto(indice) {
+	        productosSeleccionados.splice(indice, 1);
+	        actualizarTablaProductosSeleccionados();
+	    }
+		
+		// Cambia el campo de monto pagado a total final al seleccionar el método de pago
+		function seleccionarMetodoPago(metodo) {
+		    metodoPago = metodo;
+		    const totalVenta = parseFloat(document.getElementById('total-venta').textContent);
+		    const descuentoAplicado = parseFloat(document.getElementById('monto-descuento').textContent) || 0;
+		    const totalFinal = totalVenta - descuentoAplicado;
+
+		    if (metodo === 'EFECTIVO') {
+		        document.getElementById('campo-monto-pagado').classList.remove('hidden');
+		        document.getElementById('monto-pagado-input').value = ''; // Limpia el campo de entrada
+		        document.getElementById('monto-pagado-display').textContent = '0.00'; // Resetea el display
+		    } else {
+		        document.getElementById('campo-monto-pagado').classList.add('hidden');
+		        document.getElementById('monto-pagado-display').textContent = totalFinal.toFixed(2); // Establece el total final
+		    }
+		}
+		
+
+		
+		// Al abrir la caja, debes asegurarte de que este código se ejecute una vez
+		if (!sessionStorage.getItem('horaInicio')) {
+		    sessionStorage.setItem('horaInicio', new Date().toISOString()); // Solo se guarda si no existe
+		}
+
+		// Función para calcular el tiempo de caja abierta
+		function updateElapsedTime() {
+		    const startTime = new Date(sessionStorage.getItem('horaInicio'));
+		    const now = new Date();
+		    const elapsedMs = now - startTime;
+
+		    const hours = Math.floor(elapsedMs / (1000 * 60 * 60));
+		    const minutes = Math.floor((elapsedMs % (1000 * 60 * 60)) / (1000 * 60));
+		    const seconds = Math.floor((elapsedMs % (1000 * 60)) / 1000);
+
+		    document.getElementById('time-elapsed').textContent = `${hours}h ${minutes}m ${seconds}s`;
+		}
+
+		// Función para actualizar la hora actual
+		function updateTime() {
+		    const now = new Date();
+		    const timeString = now.toLocaleTimeString(); // Formato de hora local
+		    document.getElementById('current-time').textContent = timeString;
+		}
+
+		// Actualiza el tiempo transcurrido y la hora actual cada segundo
+		setInterval(() => {
+		    updateElapsedTime();
+		    updateTime();
+		}, 1000);
+		
+		console.log('Detalles de la venta:', JSON.stringify(venta, null, 2));
+
+
+	</script>
+</body>
+</html>
+
+
+
+
+
+
+
