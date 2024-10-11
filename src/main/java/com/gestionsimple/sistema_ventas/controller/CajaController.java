@@ -1,5 +1,7 @@
 package com.gestionsimple.sistema_ventas.controller;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,6 +40,7 @@ import com.gestionsimple.sistema_ventas.service.ProductoService;
 import com.gestionsimple.sistema_ventas.service.VentaService;
 import com.gestionsimple.sistema_ventas.service.contabilidad.AsientoContableService;
 
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -69,19 +72,21 @@ public class CajaController {
 	private CuentaContableService cuentaContableService; // Inyecta el servicio de cuentas contables
 
 	@GetMapping("/caja")
-	public String showCajaPage(Model model, HttpSession session) {
-		String nombreUsuario = (String) session.getAttribute("nombreUsuario");
-		if (nombreUsuario != null) {
-			model.addAttribute("nombreUsuario", nombreUsuario);
-		} else {
-			model.addAttribute("nombreUsuario", "Invitado");
-		}
+	public String showCajaPage(Model model) {
+	    // Obtener el nombre de usuario desde el contexto de seguridad
+	    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	    String nombreUsuario = authentication != null ? authentication.getName() : "Invitado";
 
-		List<Categoria> categorias = categoriaService.getAllCategorias();
-		model.addAttribute("categorias", categorias);
+	    // Agregar el nombre del usuario al modelo para mostrarlo en la vista
+	    model.addAttribute("nombreUsuario", nombreUsuario);
 
-		return "caja";
+	    // Obtener la lista de categorías
+	    List<Categoria> categorias = categoriaService.getAllCategorias();
+	    model.addAttribute("categorias", categorias);
+
+	    return "caja";
 	}
+
 
 	@GetMapping("/filtrarProductos/{categoriaId}")
 	@ResponseBody
@@ -180,7 +185,23 @@ public class CajaController {
 	    if ("TARJETACREDITO".equalsIgnoreCase(venta.getMetodoPago())) {
 	        recargo = totalConDescuento * 0.15; // 15% de recargo
 	    }
-
+	    
+	    // Si es cuenta corriente, establecer el booleano y registrar deuda
+	    // Si es cuenta corriente, establecer el booleano y registrar deuda
+	    if ("CUENTACORRIENTE".equalsIgnoreCase(venta.getMetodoPago())) {
+	        venta.setEsCuentaCorriente(true);
+	        recibo.append("**Cuenta Corriente: Se registra deuda pendiente**\n");
+	        
+	        // Actualizar la deuda del cliente
+	        if (cliente != null) {
+	            double deudaActual = cliente.getDeuda();
+	            cliente.setDeuda(deudaActual + totalConDescuento + recargo); // Aumentar la deuda
+	            clienteService.actualizarCliente(cliente.getId(), cliente);
+	        }
+	    } else {
+	        venta.setEsCuentaCorriente(false);
+	    }
+	    
 	    // Guardar valores en la venta
 	    venta.setSubtotalSinDescuentos(totalVenta); // Guardar el subtotal sin descuentos
 	    venta.setMontoDescuento(descuentoAplicado); // Guardar el descuento en la venta
@@ -254,40 +275,55 @@ public class CajaController {
 	@GetMapping("/buscarProductoPorCodigo")
 	@ResponseBody
 	public ProductoDTO buscarProductoPorCodigo(@RequestParam String codigoDeBarras) {
-	    // Log para depuración
-	    System.out.println("Buscando producto con código de barras: " + codigoDeBarras);
-
-	    // Verifica que el código no sea nulo o vacío
-	    if (codigoDeBarras == null || codigoDeBarras.trim().isEmpty()) {
-	        throw new RuntimeException("Código de barras vacío");
+	    if (codigoDeBarras.startsWith("2")) { 
+	        return manejarCodigoDeBalanza(codigoDeBarras);
 	    }
 
+	    return buscarProducto(codigoDeBarras);
+	}
+
+	private ProductoDTO buscarProducto(String codigoDeBarras) {
 	    Producto producto = productoService.getProductoByCodigoDeBarras(codigoDeBarras)
-	        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+	        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-	    // Log para verificar el producto encontrado
-	    System.out.println("Producto encontrado: " + producto.getNombre());
-
-	    // Convertir la entidad Producto a ProductoDTO
 	    return ProductoDTO.fromEntity(producto);
 	}
 
+	private ProductoDTO manejarCodigoDeBalanza(String codigoDeBarras) {
+	    String codigoProducto = codigoDeBarras.substring(1, 6);
+	    String importeStr = codigoDeBarras.substring(6, 12); 
+	    BigDecimal importeTotal = new BigDecimal(importeStr).divide(BigDecimal.valueOf(100)); 
 
-    @GetMapping("/productos/codigo/{codigo}")
-    @ResponseBody
-    public ResponseEntity<Producto> getProductoByCodigo(@PathVariable String codigo) {
-        // Log for debugging
-        System.out.println("Buscando producto con código: " + codigo);
-        
-        // Retrieve the product by barcode
-        Producto producto = productoService.getProductoByCodigoDeBarras(codigo)
-            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+	    Producto producto = productoService.getProductoByCodigoDeBarras(codigoProducto)
+	        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
 
-        // Log for verification
-        System.out.println("Producto encontrado: " + producto.getNombre());
+	    if (producto.getPrecioVenta().compareTo(BigDecimal.ZERO) == 0) {
+	        throw new RuntimeException("El precio del producto no puede ser cero.");
+	    }
 
-        return ResponseEntity.ok(producto);
-    }
+	    BigDecimal pesoKg = importeTotal.divide(producto.getPrecioVenta(), 3, RoundingMode.HALF_UP);
+
+	    System.out.println("Producto: " + producto.getNombre() + ", Peso: " + pesoKg + " kg, Importe total: " + importeTotal);
+
+	    ProductoDTO productoDTO = ProductoDTO.fromEntity(producto);
+	    productoDTO.setPrecioTotal(importeTotal);
+	    productoDTO.setPeso(pesoKg);
+	    return productoDTO;
+	}
+
+	@GetMapping("/productos/codigo/{codigo}")
+	@ResponseBody
+	public ResponseEntity<Producto> getProductoByCodigo(@PathVariable String codigo) {
+	    System.out.println("Buscando producto con código: " + codigo);
+	    
+	    Producto producto = productoService.getProductoByCodigoDeBarras(codigo)
+	        .orElseThrow(() -> new EntityNotFoundException("Producto no encontrado"));
+
+	    System.out.println("Producto encontrado: " + producto.getNombre());
+
+	    return ResponseEntity.ok(producto);
+	}
+
 
 
 	@GetMapping("/logout")

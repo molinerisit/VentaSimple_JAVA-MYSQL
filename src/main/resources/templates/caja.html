@@ -40,7 +40,7 @@
 		            <label for="dni" class="block font-semibold mb-2">DNI del Cliente:</label>
 		            <div class="flex w-full">
 		                <input type="text" id="dni-cliente" class="flex-1 px-3 py-2 border rounded-md" placeholder="Ingresa el DNI del cliente" />
-		                <button id="btn-aplicar-descuento" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300 ml-2">Aplicar Descuento</button>
+		                <button id="btn-aplicar-descuento" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300 ml-2">Aplicar Descuento <span class="text-xs">(Intro)</span></button>
 		            </div>
 		        </div>
 		    </div>
@@ -69,9 +69,9 @@
 		                            <td th:text="${detalle.nombreProducto}"></td>
 		                            <td th:text="${detalle.descripcion}"></td>
 		                            <td th:text="${detalle.precioUnitario}"></td>
-		                            <td>
-		                                <input type="number" min="1" th:value="${detalle.cantidad}" onchange="cambiarCantidad(${indexStat.index}, this.value)" class="border rounded px-2 py-1 w-16 text-xs" />
-		                            </td>
+									<td>
+									    <input type="number" min="0.01" step="0.01" th:value="${detalle.cantidad}" onchange="cambiarCantidad(${indexStat.index}, this.value)" class="border rounded px-2 py-1 w-16 text-xs" />
+									</td>
 		                            <td th:text="${detalle.subtotal}"></td>
 		                            <td>
 		                                <button onclick="eliminarProducto(${indexStat.index})" class="bg-red-500 text-white px-2 py-1 rounded">Eliminar</button>
@@ -110,18 +110,21 @@
 			        <div class="flex justify-center space-x-4 mb-4">
 			            <button
 			                class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
-			                onclick="seleccionarMetodoPago('EFECTIVO')">Efectivo</button>
+			                onclick="seleccionarMetodoPago('EFECTIVO')">Efectivo <span class="text-xs">(E)</span></button>
 			            <button
 			                class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
-			                onclick="seleccionarMetodoPago('TARJETADEBITO')">Tarjeta debito</button>
-							<button
-									                class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
-									                onclick="seleccionarMetodoPago('TARJETACREDITO')">Tarjeta credito</button>
+			                onclick="seleccionarMetodoPago('TARJETADEBITO')">Tarjeta debito<span class="text-xs">(B)</span></button>
+							<button class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
+							onclick="seleccionarMetodoPago('TARJETACREDITO')">Tarjeta credito<span class="text-xs">(C)</span></button>
 			            <button
 			                class="bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
-			                onclick="seleccionarMetodoPago('QR')">QR</button>
+			                onclick="seleccionarMetodoPago('QR')">QR<span class="text-xs">(Q)</span></button>
 			        </div>
-
+					           
+					    <button
+					        class="btn-mostrar-modal-cuentacorriente bg-green-500 text-white rounded-lg py-2 px-4 hover:bg-green-600 transition duration-300"
+					        onclick="seleccionarMetodoPago('CUENTACORRIENTE')">CTA.CORRIENTE<span class="text-xs">(W)</span></button>
+					</div>
 			        <div id="campo-monto-pagado" class="mt-4 hidden max-w-xs mx-auto">
 			            <label for="monto-pagado-input" class="block text-lg font-medium text-gray-700 mb-2">Monto Pagado:</label>
 			            <div class="flex items-center bg-gray-200 rounded-md">
@@ -132,10 +135,29 @@
 			    </div>
 
 			    <div class="mt-8">
-			        <button id="btn-registrar-venta" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300">Registrar Venta</button>
+			        <button id="btn-registrar-venta" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300">Registrar Venta <span class="text-xs">(R)</span></button>
 			    </div>
 			</div>
 
+			<!-- Modal para ingresar DNI de cliente para Cuenta Corriente -->
+			<div id="modal-cuentacorriente" class="fixed z-10 inset-0 overflow-y-auto hidden">
+			    <div class="flex items-center justify-center min-h-screen bg-black bg-opacity-50">
+			        <div class="bg-white p-8 rounded-lg shadow-lg max-w-sm w-full">
+			            <!-- Título del modal -->
+			            <h2 class="text-xl font-semibold mb-4 text-center">Ingresar DNI del Cliente</h2>
+			            <!-- Entrada para ingresar DNI -->
+			            <input type="number" id="dni-cuentacorriente" placeholder="Ingrese DNI" class="mt-4 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+			            <!-- Botón para guardar el DNI -->
+			            <button id="btn-guardar-dni-cuentacorriente" class="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded-md transition duration-200">
+			                Guardar
+			            </button>
+			            <!-- Botón para cerrar modal -->
+			            <button id="btn-cerrar-modal-cuentacorriente" class="mt-6 w-full bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 rounded-md transition duration-200">
+			                Cerrar    
+			            </button>
+			        </div>
+			    </div>
+			</div>
 
 
 	<!-- Botones de Categorías y Productos -->
@@ -163,7 +185,7 @@
 	            <!-- Título del modal -->
 	            <h2 class="text-xl font-semibold mb-4 text-center">Ingresar Monto Manualmente</h2>
 	            <!-- Entrada para ingresar monto -->
-	            <input type="number" id="monto-manual" placeholder="Ingrese un monto" class="mt-4 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+	            <input type="number" step="0.01" min="0.01" id="monto-manual" placeholder="Ingrese un monto" class="mt-4 block w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
 	            <!-- Botón para guardar el monto -->
 	            <button id="btn-guardar-monto" onclick="guardarMontoManual()" class="mt-6 w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 rounded-md transition duration-200">
 	                Guardar
@@ -176,20 +198,113 @@
 	    </div>
 	</div>
 
-	
-
-	
 	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<script>
 		
+		// JavaScript para manejo de atajos de teclado
+		document.addEventListener('keydown', function(event) {
+		    const tagName = event.target.tagName.toLowerCase();
+
+		    // Evitar la captura de teclas si el foco está en un input o textarea
+		    if (tagName === 'input' || tagName === 'textarea') {
+		        if (event.key === 'Enter') {
+		            event.preventDefault();
+		            if (event.target.id === 'dni-cliente') {
+		                document.getElementById('btn-aplicar-descuento').click();
+		            } else if (event.target.id === 'monto-manual') {
+		                document.getElementById('btn-guardar-monto').click();
+		            } else if (event.target.id === 'dni-cuentacorriente') {
+		                document.getElementById('btn-guardar-dni-cuentacorriente').click();
+		            }
+		        } else if (event.key === 'Escape') {
+		            event.preventDefault();
+		            event.target.blur(); // Desenfocar el input cuando se presiona Escape
+		        }
+		        return; // Si está en un input, evita que siga capturando atajos
+		    }
+
+		    // Atajos de teclado para otros casos
+		    switch (event.key.toLowerCase()) {
+		        case 'e': // Tecla E: seleccionar efectivo
+		            event.preventDefault();
+		            document.querySelector('button[onclick="seleccionarMetodoPago(\'EFECTIVO\')"]').click();
+		            // Colocar el foco en el campo de input de monto pagado
+		            document.getElementById('monto-pagado-input').focus();
+		            break;
+					case 'a': // Tecla E: seleccionar efectivo
+						            event.preventDefault();
+						            // Colocar el foco en el campo de input de dni
+						            document.getElementById('dni-cliente').focus();
+						            break;
+		        case 'b': // Tecla B: seleccionar tarjeta de débito
+		            event.preventDefault();
+		            document.querySelector('button[onclick="seleccionarMetodoPago(\'TARJETADEBITO\')"]').click();
+		            break;
+		        case 'c': // Tecla C: seleccionar tarjeta de crédito
+		            event.preventDefault();
+		            document.querySelector('button[onclick="seleccionarMetodoPago(\'TARJETACREDITO\')"]').click();
+		            break;
+		        case 'q': // Tecla Q: seleccionar QR
+		            event.preventDefault();
+		            document.querySelector('button[onclick="seleccionarMetodoPago(\'QR\')"]').click();
+		            break;
+		        case 'u': // Tecla U: seleccionar cuenta corriente
+		            event.preventDefault();
+		            document.querySelector('button[onclick="seleccionarMetodoPago(\'CUENTACORRIENTE\')"]').click();
+		            break;
+		        case 'r': // Tecla R: registrar venta
+		            event.preventDefault();
+		            document.getElementById('btn-registrar-venta').click();
+		            break;
+		        case 'escape': // Tecla Escape: cerrar modales y quitar foco
+		            event.preventDefault();
+		            cerrarModalesYSalirInputs();
+		            break;
+		    }
+		});
+
+		// Función para cerrar modales y salir de los inputs al presionar Escape
+		function cerrarModalesYSalirInputs() {
+		    // Cierra los modales si están abiertos
+		    const modalCuentaCorriente = document.getElementById('modal-cuentacorriente');
+		    if (modalCuentaCorriente && !modalCuentaCorriente.classList.contains('hidden')) {
+		        modalCuentaCorriente.classList.add('hidden');
+		    }
+
+		    const modalGeneral = document.getElementById('modal-general');
+		    if (modalGeneral && !modalGeneral.classList.contains('hidden')) {
+		        modalGeneral.classList.add('hidden');
+		    }
+
+		    // Cierra cualquier otro modal que pueda estar abierto
+		    const modales = document.querySelectorAll('.modal'); // Asume que todos los modales tienen la clase .modal
+		    modales.forEach(modal => modal.classList.add('hidden'));
+
+		    // Quitar el foco de cualquier input activo
+		    const activeElement = document.activeElement;
+		    if (activeElement && (activeElement.tagName.toLowerCase() === 'input' || activeElement.tagName.toLowerCase() === 'textarea')) {
+		        activeElement.blur(); // Quitar el foco
+		    }
+		}
+
+		// Función para abrir el modal de monto manual
+		document.getElementById('btn-mostrar-modal').addEventListener('click', function() {
+		    document.getElementById('modal-monto').classList.remove('hidden');
+		});
+
+		// Función para cerrar el modal
+		document.getElementById('btn-cerrar-modal').addEventListener('click', function() {
+		    document.getElementById('modal-monto').classList.add('hidden');
+		});
+
 		document.addEventListener("DOMContentLoaded", function () {
 		    // Oculta inicialmente ciertos elementos que no deben mostrarse hasta que sean necesarios
 		    document.getElementById('monto-descuento').parentElement.classList.add('hidden');
+		    document.getElementById('monto-recargo').parentElement.classList.add('hidden');
 		    document.getElementById('vuelto').parentElement.classList.add('hidden');
 		    document.getElementById('monto-pagado-display').parentElement.classList.add('hidden');
 		});
 
-		
 		document.getElementById('btn-aplicar-descuento').addEventListener('click', function() {
 		    const dni = document.getElementById('dni-cliente').value;
 		    console.log("DNI del cliente:", dni); // Verifica el DNI
@@ -202,7 +317,7 @@
 		                const descuento = response.data.descuento;
 		                if (!isNaN(descuento) && descuento !== null) {
 		                    aplicarDescuento(descuento);
-							document.getElementById('monto-descuento').parentElement.classList.remove('hidden');
+		                    document.getElementById('monto-descuento').parentElement.classList.remove('hidden');
 		                } else {
 		                    alert('El cliente no tiene un descuento válido');
 		                }
@@ -212,6 +327,7 @@
 		        })
 		        .catch(error => console.error('Error al obtener cliente:', error));
 		});
+
 
 
 		function aplicarDescuento(descuento) {
@@ -229,42 +345,7 @@
 		}
 
 	    
-		// Llama a la API para obtener el código escaneado
-		function obtenerCodigoDeBarrasEscaneado() {
-		    fetch('/barcode/get-scanned-barcode')
-		        .then(response => response.json())
-		        .then(data => {
-		            if (data.codigoDeBarras) {
-		                updateCodigoDeBarras(data.codigoDeBarras);
-		            }
-		        })
-		        .catch(error => console.error('Error al obtener el código de barras:', error));
-		}
-		
-		function updateCodigoDeBarras(code) {
-		    const inputField = document.getElementById("codigoDeBarras");
-		    inputField.value = code; // Actualiza el valor del campo
-		    inputField.dispatchEvent(new Event('input')); // Dispara el evento de input si necesitas que se ejecute el listener
-		}
-		// Llama a esta función cada 500 ms (ajusta según tus necesidades)
-		setInterval(obtenerCodigoDeBarrasEscaneado, 500);
-		// Actualiza el campo de entrada
-		document.getElementById('codigoDeBarras').addEventListener('input', function(event) {
-		    const codigoBarras = this.value.trim();
-		    if (codigoBarras.length === 13) { // Asegúrate de que la longitud es la esperada
-		        buscarProductoPorCodigo(codigoBarras);
-		        this.value = ''; // Limpiar el campo después de escanear
-		    }
-		});
-		// Función para abrir el modal de monto manual
-		document.getElementById('btn-mostrar-modal').addEventListener('click', function() {
-			document.getElementById('modal-monto').classList.remove('hidden');
-		});
-
-		// Función para cerrar el modal
-		document.getElementById('btn-cerrar-modal').addEventListener('click', function() {
-			document.getElementById('modal-monto').classList.add('hidden');
-		});
+	
 		
 		let productosSeleccionados = [];
 
@@ -300,35 +381,7 @@
 		    document.getElementById('monto-manual').value = '';
 		}
 
-		function buscarProductoPorCodigo(codigoBarras) {
-		    console.log("Buscando producto con código:", codigoBarras);
-		    axios.get(`/productos/codigo/${codigoBarras}`)
-		        .then(response => {
-		            console.log("Respuesta del servidor:", response.data);
-		            if (response.data) {
-		                agregarProductoSeleccionado(response.data);
-		            } else {
-		                alert('Producto no encontrado');
-		            }
-		        })
-		        .catch(error => {
-		            console.error('Error al buscar el producto:', error);
-		            alert('Error al buscar el producto.');
-		        });
-		}
-
-		document.addEventListener("DOMContentLoaded", function () {
-		    const codigoDeBarrasInput = document.getElementById("codigoDeBarras");
-		    codigoDeBarrasInput.focus();
-		});
-		document.getElementById('codigoDeBarras').focus();
-		document.getElementById('codigoDeBarras').addEventListener('input', function(event) {
-		    const codigoBarras = this.value.trim();
-		    if (codigoBarras.length === 13) { // Ajusta si es necesario
-		        buscarProductoPorCodigo(codigoBarras);
-		        this.value = ''; // Limpiar el campo después de escanear
-		    }
-		});
+		
 
 		function filtrarProductos(categoriaId) {
 		    fetch(`/filtrarProductos/${categoriaId}`)
@@ -393,25 +446,182 @@
 		        contenedorProductos.appendChild(productoBtn);
 		    });
 		}
-		function agregarProductoSeleccionado(producto) {
+		
+		
+		let codigosProcesados = new Set(); // Conjunto para almacenar códigos de barras procesados
+		let escaneando = false; // Control de escaneo
+
+		// Llama a la API para obtener el código escaneado
+		function obtenerCodigoDeBarrasEscaneado() {
+		    fetch('/barcode/get-scanned-barcode')
+		        .then(response => response.json())
+		        .then(data => {
+		            if (data.codigoDeBarras) {
+		                updateCodigoDeBarras(data.codigoDeBarras);
+		            }
+		        })
+		        .catch(error => console.error('Error al obtener el código de barras:', error));
+		}
+
+		let tiempoUltimoEscaneo = 0;
+
+		function updateCodigoDeBarras(code) {
+		    const tiempoActual = new Date().getTime();
+		    if (tiempoActual - tiempoUltimoEscaneo < 1000) {
+		        // Si el último escaneo ocurrió hace menos de 1 segundo, no procesar
+		        return;
+		    }
+		    tiempoUltimoEscaneo = tiempoActual;
+
+		    // Marcar como escaneando
+		    escaneando = true;
+
+		    let codigoProducto = code;
+		    let importe = null;
+
+		    // Si el código de barras comienza con '2', es un producto pesable
+		    if (codigoProducto.startsWith("2")) {
+		        codigoProducto = codigoProducto.substring(1); // Eliminar el primer carácter '2'
+		        importe = codigoProducto.substring(codigoProducto.length - 7, codigoProducto.length - 3);
+
+		        const parteEntera = importe.substring(0, 5); // 5 dígitos para la parte entera
+		        const decimales = importe.charAt(5) + importe.charAt(6); // Los dos últimos dígitos como decimales
+
+		        codigoProducto = codigoProducto.substring(0, codigoProducto.length - 7); // Eliminar los últimos 7 dígitos
+
+		        importe = parseFloat(`${parseInt(parteEntera, 10)}.${decimales}`); // Formatear el importe como un número decimal
+
+		        console.log(`Código de producto: ${codigoProducto}, Importe: $${importe.toFixed(2)}`);
+
+		        // Permitir múltiples escaneos de productos pesables
+		        axios.get(`/productos/codigo/${codigoProducto}`)
+		            .then(response => {
+		                if (response.data) {
+		                    agregarProductoSeleccionado(response.data, true, importe); // Pasar la bandera esDeBalanza y el importe
+		                } else {
+		                    alert('Producto no encontrado');
+		                }
+		            })
+		            .catch(error => {
+		                console.error('Error al buscar el producto:', error);
+		                alert('Error al buscar el producto.');
+		            })
+		            .finally(() => {
+		                escaneando = false; // Restablecer el control de escaneo
+		            });
+		    } else {
+		        // Para productos no pesables, permitir escaneos repetidos
+		        console.log(`Código de producto: ${codigoProducto}, Importe: No disponible`);
+
+		        axios.get(`/productos/codigo/${codigoProducto}`)
+		            .then(response => {
+		                if (response.data) {
+		                    agregarProductoSeleccionado(response.data);
+		                } else {
+		                    alert('Producto no encontrado');
+		                }
+		            })
+		            .catch(error => {
+		                console.error('Error al buscar el producto:', error);
+		                alert('Error al buscar el producto.');
+		            })
+		            .finally(() => {
+		                escaneando = false; // Restablecer el control de escaneo
+		            });
+		    }
+
+		    inputField.value = codigoProducto; // Actualizar el valor del campo con el código
+		    inputField.dispatchEvent(new Event('input')); // Disparar el evento de input si es necesario
+		}
+
+
+		// Llama a esta función cada 500 ms (ajusta según tus necesidades)
+		setInterval(obtenerCodigoDeBarrasEscaneado, 500);
+
+		// Actualiza el campo de entrada
+		document.getElementById('codigoDeBarras').addEventListener('input', function(event) {
+		    const codigoBarras = this.value.trim();
+		    if (codigoBarras.length >= 5) { // Asegúrate de que la longitud es la esperada
+		        buscarProductoPorCodigo(codigoBarras);
+		        this.value = ''; // Limpiar el campo después de escanear
+		    }
+		});
+
+		function buscarProductoPorCodigo(codigoBarras) {
+		    console.log("Buscando producto con código:", codigoBarras);
+		    axios.get(`/productos/codigo/${codigoBarras}`)
+		        .then(response => {
+		            console.log("Respuesta del servidor:", response.data);
+		            if (response.data) {
+		                agregarProductoSeleccionado(response.data);
+		            } else {
+		                alert('Producto no encontrado');
+		            }
+		        })
+		        .catch(error => {
+		            console.error('Error al buscar el producto:', error);
+		            alert('Error al buscar el producto.');
+		        });
+		}
+
+		document.addEventListener("DOMContentLoaded", function () {
+		    const codigoDeBarrasInput = document.getElementById("codigoDeBarras");
+		    codigoDeBarrasInput.focus();
+		});
+
+		// Remover el foco al cargar la página
+		document.addEventListener("DOMContentLoaded", function () {
+		    document.getElementById('codigoDeBarras').blur(); // Evitar que el campo obtenga foco al cargar
+		});
+
+		// Función para agregar productos seleccionados (modificada)
+		function agregarProductoSeleccionado(producto, esDeBalanza = false, importe = null) {
 		    const encontrado = productosSeleccionados.find(item => item.producto.id === producto.id);
 
-		    if (encontrado) {
-		        encontrado.cantidad++;
-		        encontrado.subtotal = encontrado.cantidad * encontrado.precioUnitario;
+		    if (esDeBalanza && importe) {
+		        const precioUnitario = producto.precioVenta;
+		        const cantidadCalculada = parseFloat((importe / precioUnitario).toFixed(3)); // Calcular la cantidad basándose en el importe
+
+		        if (encontrado) {
+		            // Sumar la cantidad calculada al producto ya existente
+		            encontrado.cantidad += cantidadCalculada;  
+		            encontrado.subtotal = parseFloat((encontrado.cantidad * encontrado.precioUnitario).toFixed(2));  // Actualizar el subtotal
+		        } else {
+		            // Agregar un nuevo producto a la lista
+		            const detalleVenta = {
+		                producto: { id: producto.id },
+		                nombreProducto: producto.nombre,
+		                descripcion: producto.descripcion,
+		                precioUnitario: producto.precioVenta,
+		                cantidad: cantidadCalculada, // Añadir la cantidad calculada
+		                subtotal: parseFloat((cantidadCalculada * producto.precioVenta).toFixed(2))  // Redondear a dos decimales
+		            };
+		            productosSeleccionados.push(detalleVenta);
+		        }
 		    } else {
-		        const detalleVenta = {
-		            producto: { id: producto.id },
-		            nombreProducto: producto.nombre,
-		            descripcion: producto.descripcion,
-		            precioUnitario: producto.precioVenta,
-		            cantidad: 1,
-		            subtotal: producto.precioVenta
-		        };
-		        productosSeleccionados.push(detalleVenta);
+		        // Para productos no pesables
+		        if (encontrado) {
+		            // Incrementar la cantidad si el producto ya está en la lista
+		            encontrado.cantidad += 1;  
+		            encontrado.subtotal = parseFloat((encontrado.cantidad * encontrado.precioUnitario).toFixed(2));  // Actualizar el subtotal
+		        } else {
+		            // Agregar un nuevo producto a la lista
+		            const detalleVenta = {
+		                producto: { id: producto.id },
+		                nombreProducto: producto.nombre,
+		                descripcion: producto.descripcion,
+		                precioUnitario: producto.precioVenta,
+		                cantidad: 1, // Cantidad es 1 para productos no pesables
+		                subtotal: parseFloat(producto.precioVenta.toFixed(2))  // Redondear a dos decimales
+		            };
+		            productosSeleccionados.push(detalleVenta);
+		        }
 		    }
+
 		    actualizarTablaProductosSeleccionados();
 		}
+
+
 
 		function actualizarTablaProductosSeleccionados() {
 		    const tablaProductos = document.getElementById('tabla-productos-seleccionados');
@@ -425,9 +635,9 @@
 		        fila.innerHTML = `
 		            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${detalle.nombreProducto}</td>
 		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${detalle.descripcion}</td>
-		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${detalle.precioUnitario}</td>
+		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${detalle.precioUnitario.toFixed(2)}</td>
 		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-		                <input type="number" min="1" value="${detalle.cantidad}" class="cantidad-input" data-index="${index}">
+		                <input type="number" min="0.01" step="0.01" value="${detalle.cantidad}" class="cantidad-input" data-index="${index}">
 		            </td>
 		            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">$${detalle.subtotal.toFixed(2)}</td>
 		            <td>
@@ -440,19 +650,19 @@
 		    document.getElementById('subtotal-sin-descuentos').textContent = subtotalSinDescuentos.toFixed(2);
 		    document.getElementById('total-venta').textContent = (subtotalSinDescuentos - parseFloat(document.getElementById('monto-descuento').textContent || '0')).toFixed(2);
 
-		    // Agregar evento de cambio a todos los inputs de cantidad
 		    document.querySelectorAll('.cantidad-input').forEach(input => {
 		        input.addEventListener('input', (event) => {
 		            const index = event.target.dataset.index;
-		            const nuevaCantidad = parseInt(event.target.value, 10);
+		            const nuevaCantidad = parseFloat(event.target.value);
 		            if (!isNaN(nuevaCantidad) && nuevaCantidad > 0) {
 		                productosSeleccionados[index].cantidad = nuevaCantidad;
-		                productosSeleccionados[index].subtotal = nuevaCantidad * productosSeleccionados[index].precioUnitario;
+		                productosSeleccionados[index].subtotal = parseFloat((nuevaCantidad * productosSeleccionados[index].precioUnitario).toFixed(2));
 		                actualizarTablaProductosSeleccionados();
 		            }
 		        });
 		    });
 		}
+
 		
 		
 		function calcularVuelto(montoPagado, total) {
@@ -461,8 +671,6 @@
 
 		// Ajusta la función registrarVenta para usar el nuevo campo
 		
-
-
 		// Evento para el campo de monto pagado
 		document.getElementById('monto-pagado-input').addEventListener('input', () => {
 		    const subtotalSinDescuentos = parseFloat(document.getElementById('subtotal-sin-descuentos').textContent);
@@ -486,7 +694,36 @@
 		    actualizarTablaProductosSeleccionados();
 		}
 
+		
+		document.addEventListener('DOMContentLoaded', function() {
+		    // Función para cerrar el modal
+		    document.getElementById('btn-cerrar-modal-cuentacorriente').addEventListener('click', function() {
+		        document.getElementById('modal-cuentacorriente').classList.add('hidden');
+		    });
+
+		    // Función para guardar el DNI del cliente aca deberiamos obtener si el cliente esta registrado antes del fiado.
+		    document.getElementById('btn-guardar-dni-cuentacorriente').addEventListener('click', function() {
+		        const dniCliente = document.getElementById('dni-cuentacorriente').value.trim();
+
+		        if (!dniCliente) {
+		            alert('Por favor, ingrese un DNI válido.');
+		            return;
+		        }
+
+		        // Guardar el DNI en un campo oculto o vincularlo directamente a la venta
+		        document.getElementById('dni-cliente').value = dniCliente;
+
+		        // Cerrar el modal después de guardar el DNI
+		        document.getElementById('modal-cuentacorriente').classList.add('hidden');
+		        
+		        // Actualizar la vista o realizar otras acciones necesarias
+		    });
+		});
+
+
+		
 		// Cambia el campo de monto pagado a total final al seleccionar el método de pago
+		// Función para seleccionar el método de pago y actualizar la interfaz
 		function seleccionarMetodoPago(metodo) {
 		    metodoPago = metodo;
 
@@ -497,6 +734,12 @@
 		    let recargo = 0;
 		    let totalFinal = totalConDescuento; // Inicialmente, el total es el que tiene el descuento
 
+		    // Ocultar todos los campos irrelevantes por defecto
+		    document.getElementById('campo-monto-pagado').classList.add('hidden');
+		    document.getElementById('monto-pagado-display').parentElement.classList.add('hidden');
+		    document.getElementById('vuelto').parentElement.classList.add('hidden');
+		    document.getElementById('monto-recargo').parentElement.classList.add('hidden');
+
 		    if (metodo === 'EFECTIVO') {
 		        // Mostrar los campos de monto pagado y vuelto
 		        document.getElementById('campo-monto-pagado').classList.remove('hidden');
@@ -506,34 +749,48 @@
 		        // Resetea los valores de monto pagado y vuelto
 		        document.getElementById('monto-pagado-input').value = ''; // Limpia el campo de entrada
 		        document.getElementById('monto-pagado-display').textContent = '0.00'; // Resetea el display
+		        document.getElementById('vuelto').textContent = '0.00'; // Resetea el vuelto
 		    } 
 		    else if (metodo === 'TARJETACREDITO') {
 		        // Recargo del 15% si se selecciona Tarjeta de Crédito
 		        recargo = totalConDescuento * 0.15; 
 		        totalFinal = totalConDescuento + recargo;
 
-		        // Actualiza los elementos en la interfaz
+		        // Mostrar el recargo
+		        document.getElementById('monto-recargo').parentElement.classList.remove('hidden');
 		        document.getElementById('monto-recargo').textContent = recargo.toFixed(2);
-		        document.getElementById('total-venta').textContent = totalFinal.toFixed(2);
-
-		        // Ocultar los campos de monto pagado y vuelto para tarjeta de crédito
-		        document.getElementById('campo-monto-pagado').classList.add('hidden');
-		        document.getElementById('monto-pagado-display').textContent = totalFinal.toFixed(2);
+		    } 
+		    else if (metodo === 'CUENTACORRIENTE') {
+		        // Mostrar el modal de cuenta corriente
+		        document.getElementById('modal-cuentacorriente').classList.remove('hidden');
 		    } 
 		    else if (metodo === 'TARJETADEBITO' || metodo === 'QR') {
 		        // No hay recargo para Tarjeta de Débito o QR
 		        totalFinal = totalConDescuento;
-
-		        // Ocultar el campo de monto pagado y vuelto
-		        document.getElementById('campo-monto-pagado').classList.add('hidden');
-		        document.getElementById('monto-pagado-display').textContent = totalFinal.toFixed(2);
 		    }
 
-		    // Actualizar el total final para otros métodos
+		    // Actualizar el total final en la interfaz
 		    document.getElementById('total-venta').textContent = totalFinal.toFixed(2);
 		}
 
-		// Registrar venta y aplicar método de pago
+		// Evento para calcular el vuelto cuando el usuario ingresa el monto pagado
+		document.getElementById('monto-pagado-input').addEventListener('input', () => {
+		    const subtotalSinDescuentos = parseFloat(document.getElementById('subtotal-sin-descuentos').textContent);
+		    const descuentoAplicado = parseFloat(document.getElementById('monto-descuento').textContent) || 0;
+		    const totalConDescuento = subtotalSinDescuentos - descuentoAplicado;
+
+		    const montoPagadoInput = parseFloat(document.getElementById('monto-pagado-input').value) || 0;
+
+		    // Actualiza el monto pagado visualizado
+		    document.getElementById('monto-pagado-display').textContent = montoPagadoInput.toFixed(2);
+
+		    // Calcula el vuelto con el monto pagado menos el total con descuento
+		    const vuelto = montoPagadoInput - totalConDescuento;
+
+		    document.getElementById('vuelto').textContent = vuelto.toFixed(2);
+		});
+
+		// Función para registrar la venta
 		function registrarVenta() {
 		    let totalVenta = 0;
 		    if (productosSeleccionados.length > 0) {
@@ -549,6 +806,7 @@
 
 		    const vuelto = calcularVuelto(montoPagado, totalConDescuento);
 		    const dniCliente = document.getElementById('dni-cliente').value.trim();
+			const deuda = (metodoPago === 'CUENTACORRIENTE') ? totalVenta : 0;
 
 		    const venta = {
 		        detallesVenta: productosSeleccionados,
@@ -557,7 +815,9 @@
 		        montoPagado: montoPagado,
 		        vuelto: vuelto,
 		        descuento: descuentoAplicado,
-		        dniCliente: dniCliente
+				deuda: deuda,  // Incluye la deuda en la venta
+		        dniCliente: dniCliente,
+				cuentaCorriente: (metodoPago === 'CUENTACORRIENTE')
 		    };
 
 		    console.log('Detalles de la venta:', JSON.stringify(venta, null, 2));
@@ -567,19 +827,24 @@
 		            alert(response.data);
 		            productosSeleccionados = [];
 		            actualizarTablaProductosSeleccionados();
-		            document.getElementById('subtotal-sin-descuentos').textContent = '0.00';
-		            document.getElementById('monto-descuento').textContent = '0.00';
-		            document.getElementById('total-venta').textContent = '0.00';
-		            document.getElementById('monto-pagado-input').value = '';
-		            document.getElementById('monto-pagado-display').textContent = '0.00'; // Resetea el display
-		            document.getElementById('vuelto').textContent = '';
-		            document.getElementById('monto-manual').value = '';
-		            document.getElementById('dni-cliente').value = '';
+		            resetearCampos();
 		        })
 		        .catch(error => {
 		            console.error(error);
 		            alert('Error al registrar la venta.');
 		        });
+		}
+
+		// Función para resetear los campos después de registrar una venta
+		function resetearCampos() {
+		    document.getElementById('subtotal-sin-descuentos').textContent = '0.00';
+		    document.getElementById('monto-descuento').textContent = '0.00';
+		    document.getElementById('total-venta').textContent = '0.00';
+		    document.getElementById('monto-pagado-input').value = '';
+		    document.getElementById('monto-pagado-display').textContent = '0.00'; // Resetea el display
+		    document.getElementById('vuelto').textContent = '0.00';
+		    document.getElementById('monto-manual').value = '';
+		    document.getElementById('dni-cliente').value = '';
 		}
 
 		
@@ -617,6 +882,11 @@
 		console.log('Detalles de la venta:', JSON.stringify(venta, null, 2));
 
 
+		
+		
+
+
+		
 	</script>
 </body>
 </html>

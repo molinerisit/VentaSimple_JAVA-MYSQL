@@ -12,6 +12,8 @@ public class ProductoDTO {
     private String categoriaNombre; // Solo nombre de la categoría
     private CategoriaDTO categoria;
     private String codigoDeBarras;
+    private BigDecimal precioTotal; // Nuevo campo para el precio total
+    private BigDecimal peso; // Nuevo campo para el peso
 
     // Getters y Setters
     public Long getId() {
@@ -79,6 +81,15 @@ public class ProductoDTO {
      * @return El DTO ProductoDTO correspondiente.
      */
   
+    public BigDecimal getPrecioTotal() {
+        return precioTotal;
+    }
+
+    public void setPrecioTotal(BigDecimal precioTotal) {
+        this.precioTotal = precioTotal;
+    }
+
+    
 
 	public CategoriaDTO getCategoria() {
 		return categoria;
@@ -86,5 +97,13 @@ public class ProductoDTO {
 
 	public void setCategoria(CategoriaDTO categoria) {
 		this.categoria = categoria;
+	}
+
+	public BigDecimal getPeso() {
+		return peso;
+	}
+
+	public void setPeso(BigDecimal peso) {
+		this.peso = peso;
 	}
 }

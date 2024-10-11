@@ -21,7 +21,6 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Descuento</th>
-						<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Deuda</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                     </tr>
                 </thead>
@@ -31,18 +30,10 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${cliente.nombre} + ' ' + ${cliente.apellido}"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${cliente.telefono}"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${cliente.descuento}"></td>
-						<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" th:text="${cliente.deuda}"></td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 							<button class="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600">
 							    <a th:href="@{/clientes/editar/{id}(id=${cliente.id})}">Editar</a>
 							</button>
-							
-							<!-- Botón para Registrar Pago sin JavaScript -->
-							<form th:action="@{/clientes/{dni}/actualizar-deuda(dni=${cliente.dni})}" method="post" style="display:inline;">
-							    <button type="submit" class="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600">
-							        Registrar pago
-							    </button>
-							</form>
 
 							<button class="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600">
 							    <a th:href="@{/clientes/eliminar/{id}(id=${cliente.id})}" onclick="return confirm('¿Estás seguro de que deseas eliminar este cliente?');">Eliminar</a>
@@ -55,9 +46,7 @@
     </div>
 
     <script>
-	
-
-
+        // Aquí va el código JS para manejar el modal y la gestión de clientes.
     </script>
 </body>
 </html>

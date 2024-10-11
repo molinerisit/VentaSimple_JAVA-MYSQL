@@ -19,7 +19,8 @@ public class Cliente {
     private String telefono;
     private String direccion;
     private boolean esNegocio;
-	
+    private double deuda; // Nuevo campo para la deuda
+
     
 	public String getNombre() {
 		return nombre;
@@ -74,6 +75,14 @@ public class Cliente {
 	public void setId(Long id) {
 	    this.id = id;
 	}
+	
+	 public double getDeuda() {
+	        return deuda;
+	    }
+
+	    public void setDeuda(double deuda) {
+	        this.deuda = deuda;
+	    }
 
 
 }

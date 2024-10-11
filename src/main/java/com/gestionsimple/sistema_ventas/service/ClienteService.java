@@ -41,6 +41,8 @@ public class ClienteService {
             clienteExistente.setDni(detallesCliente.getDni());
             clienteExistente.setDireccion(detallesCliente.getDireccion());
             clienteExistente.setTelefono(detallesCliente.getTelefono());
+            clienteExistente.setDeuda(detallesCliente.getDeuda());
+
 
             return Optional.of(clienteRepository.save(clienteExistente));
         }

@@ -27,6 +27,7 @@ public class Venta {
     private double montoDescuento; // Correspondiente al 'monto-descuento'
     private double recargo; // Correspondiente al monto de recargo
     private double subtotalSinDescuentos; // Correspondiente al 'subtotal-sin-descuentos'
+    private boolean esCuentaCorriente; // Nuevo campo para cuenta corriente
 
     @ManyToMany
     private List<Producto> productos;
@@ -147,4 +148,13 @@ public class Venta {
 	public void setRecargo(double recargo) {
 		this.recargo = recargo;
 	}
+	
+	// Getters y Setters
+    public boolean isEsCuentaCorriente() {
+        return esCuentaCorriente;
+    }
+
+    public void setEsCuentaCorriente(boolean esCuentaCorriente) {
+        this.esCuentaCorriente = esCuentaCorriente;
+    }
 }

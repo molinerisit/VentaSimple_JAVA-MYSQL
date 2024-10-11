@@ -58,6 +58,20 @@ public class ClienteController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/{dni}/actualizar-deuda")
+    public String actualizarDeuda(@PathVariable String dni) {
+        Optional<Cliente> clienteOpt = clienteService.obtenerClientePorDni(dni);
+        if (clienteOpt.isPresent()) {
+            Cliente cliente = clienteOpt.get();
+            cliente.setDeuda(0.0); // Actualiza la deuda a 0
+            clienteService.actualizarCliente(cliente.getId(), cliente);
+            return "redirect:/clientes"; // Redirige a la lista de clientes
+        }
+        return "redirect:/clientes?error=clienteNoEncontrado"; // Redirige con mensaje de error
+    }
+
+
+    
     // Eliminar un cliente por ID
     @GetMapping("/eliminar/{id}")
     public ResponseEntity<Void> eliminarCliente(@PathVariable Long id) {
