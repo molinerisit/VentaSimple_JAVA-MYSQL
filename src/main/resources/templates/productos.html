@@ -21,7 +21,7 @@
             <table class="min-w-full bg-white shadow-md rounded-lg divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Venta</th>
@@ -34,7 +34,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <tr th:each="producto : ${productos}">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${producto.id}">ID</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${producto.codigoDeBarras}">ID</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${producto.nombre}">Nombre</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${producto.descripcion}">Descripción</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" th:text="${producto.precioVenta}">Precio Venta</td>

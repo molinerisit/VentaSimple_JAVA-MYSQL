@@ -32,6 +32,10 @@
         <h1 class="text-3xl font-bold mb-6" th:text="${producto.id != null} ? 'Editar Producto' : 'Nuevo Producto'"></h1>
         <form th:action="@{/productos/editar}" th:object="${producto}" method="post" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
             <input type="hidden" th:field="*{id}" />
+			<div class="mb-4">
+			               <label for="codigoDeBarras" class="block text-gray-700 text-sm font-bold mb-2">Código de barras:</label>
+			               <input type="text" id="codigoDeBarras" th:field="*{codigoDeBarras}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+			           </div>
             <div class="mb-4">
                 <label for="nombre" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
                 <input type="text" id="nombre" th:field="*{nombre}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
@@ -55,6 +59,11 @@
                 <label id="labelPrecio" for="precio" th:text="${producto.esPesable} ? 'Precio por kg:' : 'Precio unitario:'" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
                 <input type="text" id="precio" th:field="*{precioCompra}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
             </div>
+			<div class="mb-4">
+					                <label id="labelPrecioVenta" for="PrecioVenta" class="block text-gray-700 text-sm font-bold mb-2">Precio Venta:</label>
+					                <input type="text" id="PrecioVenta" th:field="*{PrecioVenta}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+					            </div>
+					<div class="mb-4">
             <div class="mb-4">
                 <label id="labelCantidad" for="cantidad" th:text="${producto.esPesable} ? 'Cantidad (kg):' : 'Cantidad (u):'" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
                 <input type="text" id="cantidad" th:field="*{stock}" class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">

@@ -72,8 +72,28 @@ public class ProductoServiceImpl implements ProductoService {
     @Transactional
     public void actualizarProducto(Producto producto) {
         logger.info("Actualizando producto: {}", producto);
-        producto.actualizarInversionTotal();
-        productoRepository.save(producto);
+
+        // Recupera el producto existente desde la base de datos
+        Producto productoExistente = productoRepository.findById(producto.getId())
+            .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        // Actualiza solo los campos que necesites, sin tocar la lista de compras
+        productoExistente.setNombre(producto.getNombre());
+        productoExistente.setDescripcion(producto.getDescripcion());
+        productoExistente.setPrecioCompra(producto.getPrecioCompra());
+        productoExistente.setPrecioVenta(producto.getPrecioVenta());
+        productoExistente.setStock(producto.getStock());
+        productoExistente.setEsPesable(producto.getEsPesable());
+        productoExistente.setGrasaDesperdicio(producto.getGrasaDesperdicio());
+        productoExistente.setOtrosDesperdicios(producto.getOtrosDesperdicios());
+        productoExistente.setCodigoDeBarras(producto.getCodigoDeBarras());
+        productoExistente.setPorcentajeRentabilidad(producto.getPorcentajeRentabilidad());
+
+        // Actualiza los cálculos relevantes, si es necesario
+        productoExistente.actualizarInversionTotal();
+
+        // Guarda los cambios
+        productoRepository.save(productoExistente);
     }
 
     @Override

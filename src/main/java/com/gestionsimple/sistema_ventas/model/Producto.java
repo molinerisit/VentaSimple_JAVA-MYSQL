@@ -57,9 +57,19 @@ public class Producto {
 
     private Categoria categoria;
 
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
+    //@OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
+    //@JsonIgnore
+    //private List<Compra> compras;
+    
+    //@OneToMany(mappedBy = "producto", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
+    //private List<Compra> compras;
+
+    
+    @OneToMany(mappedBy = "producto", fetch = FetchType.LAZY)
     private List<Compra> compras;
+
+    
+    
 
     // Getters y Setters
     public Long getId() {
