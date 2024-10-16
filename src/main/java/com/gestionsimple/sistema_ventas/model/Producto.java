@@ -66,6 +66,7 @@ public class Producto {
 
     
     @OneToMany(mappedBy = "producto", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Compra> compras;
 
     
