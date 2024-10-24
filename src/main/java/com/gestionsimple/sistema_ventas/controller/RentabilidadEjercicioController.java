@@ -1,7 +1,9 @@
 package com.gestionsimple.sistema_ventas.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.gestionsimple.sistema_ventas.dto.BalanceDTO;
 import com.gestionsimple.sistema_ventas.dto.RentabilidadDTO;
+import com.gestionsimple.sistema_ventas.dto.RentabilidadEjercicioDTO;
 import com.gestionsimple.sistema_ventas.model.DetalleVenta;
 import com.gestionsimple.sistema_ventas.model.Venta;
 import com.gestionsimple.sistema_ventas.service.DetalleVentaService;
@@ -42,36 +45,63 @@ public class RentabilidadEjercicioController {
     private DetalleVentaService detalleVentaService;
 
     @GetMapping
-    public String mostrarRentabilidad(@RequestParam(value = "fechaInicio", required = false) LocalDateTime fechaInicio,
-                                      @RequestParam(value = "fechaFin", required = false) LocalDateTime fechaFin,
+    public String mostrarRentabilidad(@RequestParam(value = "fechaInicio", required = false) String fechaInicioStr,
+                                      @RequestParam(value = "fechaFin", required = false) String fechaFinStr,
                                       Model model) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDate fechaInicio = null;
+        LocalDate fechaFin = null;
+        
+        if (fechaInicioStr != null && !fechaInicioStr.isEmpty()) {
+            fechaInicio = LocalDate.parse(fechaInicioStr, formatter); // Cambiar a LocalDate
+        }
+
+        if (fechaFinStr != null && !fechaFinStr.isEmpty()) {
+            fechaFin = LocalDate.parse(fechaFinStr, formatter); // Cambiar a LocalDate
+        }
+
         List<Venta> ventas;
         if (fechaInicio != null && fechaFin != null) {
-            ventas = ventaService.obtenerVentasPorRangoFechas(fechaInicio, fechaFin);
+            ventas = ventaService.obtenerVentasPorRangoFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23, 59, 59)); // Convierte LocalDate a LocalDateTime
         } else {
             ventas = ventaService.obtenerTodasVentas();
         }
 
-        // Calcular la rentabilidad de cada venta
-        List<RentabilidadDTO> rentabilidadPorVenta = calcularRentabilidadConDetalles(ventas);
+        // Llama a la sobrecarga del método si no se especifican fechas
+        List<RentabilidadEjercicioDTO> rentabilidadPorVenta = calcularRentabilidadConDetalles(ventas);
 
         model.addAttribute("rentabilidadPorVenta", rentabilidadPorVenta);
+
         return "rentabilidad_ejercicio";
     }
 
-    private List<RentabilidadDTO> calcularRentabilidadConDetalles(List<Venta> ventas) {
-        List<RentabilidadDTO> rentabilidadList = new ArrayList<>();
+
+
+
+ // Método que acepta solo la lista de ventas
+    private List<RentabilidadEjercicioDTO> calcularRentabilidadConDetalles(List<Venta> ventas) {
+        // Llama al método principal con fechas predeterminadas
+        return calcularRentabilidadConDetalles(ventas, "1900-01-01", "2100-12-31"); // Rango amplio que cubre todo
+    }
+
+    // Método principal que usa fechas
+    private List<RentabilidadEjercicioDTO> calcularRentabilidadConDetalles(List<Venta> ventas, String fechaInicioString, String fechaFinString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        LocalDate fechaInicio = LocalDate.parse(fechaInicioString, formatter);
+        LocalDate fechaFin = LocalDate.parse(fechaFinString, formatter);
+
+        List<RentabilidadEjercicioDTO> rentabilidadList = new ArrayList<>();
         for (Venta venta : ventas) {
-            RentabilidadDTO rentabilidadDTO = new RentabilidadDTO();
+            RentabilidadEjercicioDTO rentabilidadDTO = new RentabilidadEjercicioDTO();
             rentabilidadDTO.setIdVenta(venta.getId());
             rentabilidadDTO.setFechaHora(venta.getFechaHora());
             rentabilidadDTO.setTotalVenta(BigDecimal.valueOf(venta.getTotal()));
 
-            // Obtener los detalles de la venta
+            // Obtener detalles de la venta
             List<DetalleVenta> detallesVenta = detalleVentaService.obtenerDetallesPorVenta(venta.getId());
 
             BigDecimal totalGanancia = BigDecimal.ZERO;
-
             for (DetalleVenta detalle : detallesVenta) {
                 BigDecimal precioVenta = detalle.getProducto().getPrecioVenta();
                 BigDecimal precioCompra = detalle.getProducto().getPrecioCompra();
@@ -85,6 +115,8 @@ public class RentabilidadEjercicioController {
 
         return rentabilidadList;
     }
+
+
 
     @PostMapping("/guardarBalance")
     public ResponseEntity<?> guardarBalance(@RequestBody List<BalanceDTO> balances) {

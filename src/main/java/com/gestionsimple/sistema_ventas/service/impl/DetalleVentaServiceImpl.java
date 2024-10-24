@@ -35,9 +35,13 @@ public class DetalleVentaServiceImpl implements DetalleVentaService {
   
     @Override
     public List<DetalleVenta> obtenerDetallesVentaHoy() {
-        LocalDate fechaHoy = LocalDate.now();
-        return detalleVentaRepository.findByFecha(fechaHoy);
+        // Obtener el rango de tiempo del día actual
+        LocalDateTime inicioDia = LocalDate.now().atStartOfDay(); // Hoy a las 00:00:00
+        LocalDateTime finDia = LocalDate.now().atTime(23, 59, 59); // Hoy a las 23:59:59
+
+        return detalleVentaRepository.findByVentaFechaHoraBetween(inicioDia, finDia);
     }
+
 
     @Override
     public List<DetalleVenta> obtenerDetallesVentaPorFecha(LocalDateTime fechaHora) { // Actualizar tipo a LocalDateTime

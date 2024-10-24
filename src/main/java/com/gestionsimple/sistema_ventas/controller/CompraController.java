@@ -2,11 +2,13 @@ package com.gestionsimple.sistema_ventas.controller;
 
 import com.gestionsimple.sistema_ventas.model.Compra;
 import com.gestionsimple.sistema_ventas.model.DeudaProveedor;
+import com.gestionsimple.sistema_ventas.model.HistorialPrecio;
 import com.gestionsimple.sistema_ventas.model.PagoProveedor;
 import com.gestionsimple.sistema_ventas.model.Producto;
 import com.gestionsimple.sistema_ventas.model.Proveedor;
 import com.gestionsimple.sistema_ventas.model.contabilidad.AsientoContable;
 import com.gestionsimple.sistema_ventas.model.contabilidad.CuentaContable;
+import com.gestionsimple.sistema_ventas.repository.HistorialPrecioRepository;
 import com.gestionsimple.sistema_ventas.service.CompraService;
 import com.gestionsimple.sistema_ventas.service.DeudaProveedorService;
 import com.gestionsimple.sistema_ventas.service.PagoProveedorService;
@@ -41,7 +43,8 @@ public class CompraController {
     @Autowired
     private PagoProveedorService pagoProveedorService;
 
-    
+    @Autowired
+    private HistorialPrecioRepository historialPrecioRepository;
     
     @Autowired
     private ProductoService productoService;
@@ -90,7 +93,6 @@ public class CompraController {
         return "resultado_busqueda_producto"; // Página que muestra el resultado de la búsqueda
     }
 
-    
     @PostMapping("/compras")
     public String saveCompra(@ModelAttribute("compra") Compra compra) {
         logger.info("Guardando nueva compra: {}", compra);
@@ -98,29 +100,27 @@ public class CompraController {
         Proveedor proveedor = proveedorService.getProveedorById(compra.getProveedor().getId());
 
         if (proveedor != null) {
-        	 if (!compra.isPagado()) {
-                 DeudaProveedor nuevaDeuda = new DeudaProveedor();
-                 nuevaDeuda.setMonto(compra.getTotal());
-                 nuevaDeuda.setProveedor(proveedor);
-                 nuevaDeuda.setFechaRegistro(LocalDate.now());
+            if (!compra.isPagado()) {
+                DeudaProveedor nuevaDeuda = new DeudaProveedor();
+                nuevaDeuda.setMonto(compra.getTotal());
+                nuevaDeuda.setProveedor(proveedor);
+                nuevaDeuda.setFechaRegistro(LocalDate.now());
 
-                 // Conversión de java.sql.Date a LocalDate
-                 java.sql.Date sqlDate = (java.sql.Date) compra.getFecha();
-                 LocalDate localDate = sqlDate.toLocalDate();  // Convertir la fecha
-                 nuevaDeuda.setFechaDeuda(localDate);  // Asignar la fecha convertida
-                 nuevaDeuda.setPagado(false); // Aquí se establece que la deuda no está pagada
+                // Conversión de java.sql.Date a LocalDate
+                java.sql.Date sqlDate = (java.sql.Date) compra.getFecha();
+                LocalDate localDate = sqlDate.toLocalDate(); // Convertir la fecha
+                nuevaDeuda.setFechaDeuda(localDate); // Asignar la fecha convertida
+                nuevaDeuda.setPagado(false); // Aquí se establece que la deuda no está pagada
 
-                 // Obtener el producto para la descripción
-                 Producto producto = productoService.obtenerProductoPorId(compra.getProducto().getId());
-                 if (producto != null) {
-                     nuevaDeuda.setDescripcion("Deuda por compra de producto: " + producto.getNombre());
-                 } else {
-                     nuevaDeuda.setDescripcion("Deuda por compra de producto desconocido");
-                 }
+                Producto producto = productoService.obtenerProductoPorId(compra.getProducto().getId());
+                if (producto != null) {
+                    nuevaDeuda.setDescripcion("Deuda por compra de producto: " + producto.getNombre());
+                } else {
+                    nuevaDeuda.setDescripcion("Deuda por compra de producto desconocido");
+                }
 
-                 deudaProveedorService.registrarDeuda(proveedor.getId(), nuevaDeuda);
+                deudaProveedorService.registrarDeuda(proveedor.getId(), nuevaDeuda);
             } else {
-                // Registrar el pago
                 PagoProveedor nuevoPago = new PagoProveedor();
                 nuevoPago.setMonto(compra.getTotal());
                 Producto producto = productoService.obtenerProductoPorId(compra.getProducto().getId());
@@ -134,7 +134,6 @@ public class CompraController {
                 nuevoPago.setFecha_pago(LocalDate.now());
                 nuevoPago.setProveedor(proveedor);
 
-                // Registrar el nuevo pago
                 pagoProveedorService.registrarPago(proveedor.getId(), nuevoPago);
             }
 
@@ -147,8 +146,32 @@ public class CompraController {
         // Actualizar stock del producto
         Producto producto = productoService.obtenerProductoPorId(compra.getProducto().getId());
         if (producto != null) {
+            // Actualiza el stock
             producto.setStock(producto.getStock() + (int) compra.getCantidad());
-            producto.setPrecioCompra(BigDecimal.valueOf(compra.getPrecioCompra()));
+
+            // Verificar si el precio de compra ha cambiado
+         // Verificar si el precio de compra ha cambiado
+            if (producto.getPrecioCompraActual().compareTo(BigDecimal.valueOf(compra.getPrecioCompraActual())) != 0) {
+                // Guardar el historial de precios
+                HistorialPrecio historialPrecio = new HistorialPrecio();
+                historialPrecio.setProducto(producto);
+                historialPrecio.setPrecioCompra(BigDecimal.valueOf(compra.getPrecioCompraActual())); // Guardar precio anterior
+                historialPrecio.setFechaModificacion(LocalDate.now());
+
+                // Guardar el historial y manejar excepciones
+                try {
+                    historialPrecioRepository.save(historialPrecio);
+                    logger.info("Historial de precios guardado para el producto con ID: {}", producto.getId());
+                } catch (Exception e) {
+                    logger.error("Error al guardar el historial de precios: {}", e.getMessage());
+                }
+
+                // Actualizar el precioCompraActual con el nuevo valor
+                producto.actualizarPrecioCompraActual(BigDecimal.valueOf(compra.getPrecioCompraActual()));
+                logger.info("Historial de precios actualizado para el producto con ID: {}", producto.getId());
+            }
+
+
             productoService.guardarProducto(producto);
         } else {
             logger.error("Producto no encontrado: {}", compra.getProducto().getId());
@@ -158,7 +181,6 @@ public class CompraController {
         compraService.saveCompra(compra);
         return "redirect:/compras";
     }
-
 
 
     // Nuevos métodos para manejar los pagos y deudas

@@ -21,9 +21,9 @@ public class Producto {
     @NotEmpty(message = "El nombre no puede estar vacío")
     private String nombre;
 
-    @NotNull(message = "El precio de compra es obligatorio")
+    // Eliminamos @NotNull para que el precio de compra no sea obligatorio
     @Min(value = 0, message = "El precio de compra debe ser mayor o igual a cero")
-    private BigDecimal precioCompra = BigDecimal.ZERO;
+    private BigDecimal precioCompra = BigDecimal.ZERO; // Se puede mantener como BigDecimal.ZERO o cambiar a null.
 
     @NotNull(message = "El precio de venta es obligatorio")
     @Min(value = 0, message = "El precio de venta debe ser mayor o igual a cero")
@@ -33,6 +33,7 @@ public class Producto {
     @Min(value = 0, message = "La cantidad debe ser mayor o igual a cero")
     private int stock;
 
+    private BigDecimal insumosVarios = BigDecimal.ZERO;
     private BigDecimal grasaDesperdicio = BigDecimal.ZERO;
     private BigDecimal otrosDesperdicios = BigDecimal.ZERO;
 
@@ -50,28 +51,26 @@ public class Producto {
     private Boolean esPesable;
     private String descripcion;
     private boolean activo;
+    
+    @Column(name = "precio_compra_actual")
+    private BigDecimal precioCompraActual = BigDecimal.ZERO; // Inicializado a 0
+    
+    @Column(name = "precio_compra_anterior")
+    private BigDecimal precioCompraAnterior = BigDecimal.ZERO; // Inicializado a 0
 
-    //@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id") // Asegúrate de que la columna coincida con tu base de datos
     @ManyToOne(fetch = FetchType.EAGER)
-
     private Categoria categoria;
 
-    //@OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    //@JsonIgnore
-    //private List<Compra> compras;
-    
-    //@OneToMany(mappedBy = "producto", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = false)
-    //private List<Compra> compras;
-
-    
     @OneToMany(mappedBy = "producto", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Compra> compras;
 
-    
-    
+    private boolean precioCompraCambio;
 
+   
+    private LocalDate fechaCambioPrecio;
+ 
     // Getters y Setters
     public Long getId() {
         return id;
@@ -241,4 +240,66 @@ public class Producto {
     public void calcularDineroTotalRecaudado() {
         this.dineroTotalRecaudado = this.precioVenta.multiply(BigDecimal.valueOf(this.stock));
     }
+
+    public boolean isPrecioCompraCambio() {
+        return precioCompraCambio;
+    }
+
+    public void setPrecioCompraCambio(boolean precioCompraCambio) {
+        this.precioCompraCambio = precioCompraCambio;
+    }
+
+	public BigDecimal getPrecioCompraActual() {
+		return precioCompraActual;
+	}
+
+	public void setPrecioCompraActual(BigDecimal precioCompraActual) {
+		this.precioCompraActual = precioCompraActual;
+	}
+
+	public BigDecimal getPrecioCompraAnterior() {
+		return precioCompraAnterior;
+	}
+
+	public void setPrecioCompraAnterior(BigDecimal precioCompraAnterior) {
+		this.precioCompraAnterior = precioCompraAnterior;
+	}
+
+	public void actualizarInversionTotal(int cantidad) {
+	    if (precioCompra != null && cantidad > 0) {
+	        // Usa la cantidad para calcular la inversión total
+	        this.inversionTotal = this.precioCompra.multiply(BigDecimal.valueOf(cantidad));
+	    } else {
+	        this.inversionTotal = BigDecimal.ZERO; // O un valor por defecto
+	    }
+	}
+
+	 // Método que actualiza el precio de compra
+    public void actualizarPrecioCompra(BigDecimal nuevoPrecio) {
+        this.precioCompraAnterior = this.precioCompra; // Guarda el precio actual antes de la actualización
+        this.precioCompra = nuevoPrecio; // Actualiza al nuevo precio
+    }
+    
+    public void actualizarPrecioCompraActual(BigDecimal nuevoPrecio) {
+        this.precioCompraActual = nuevoPrecio;
+    }
+
+	public LocalDate getFechaCambioPrecio() {
+		return fechaCambioPrecio;
+	}
+
+	public void setFechaCambioPrecio(LocalDate fechaCambioPrecio) {
+		this.fechaCambioPrecio = fechaCambioPrecio;
+	}
+
+	public BigDecimal getInsumosVarios() {
+		return insumosVarios;
+	}
+
+	public void setInsumosVarios(BigDecimal insumosVarios) {
+		this.insumosVarios = insumosVarios;
+	}
+
 }
+
+

@@ -15,7 +15,7 @@ public class Compra {
     private Date fecha;
 
     private Double total; // Cambiado a Double
-    private double precioCompra;
+    private double precioCompraActual;
     @Column(nullable = false)
     private Boolean esPesable;
     private double cantidad;
@@ -61,12 +61,12 @@ public class Compra {
         this.total = total;
     }
 
-    public double getPrecioCompra() {
-        return precioCompra;
+    public double getPrecioCompraActual() {
+        return precioCompraActual;
     }
 
-    public void setPrecioCompra(double precioCompra) {
-        this.precioCompra = precioCompra;
+    public void setPrecioCompraActual(double precioCompraActual) {
+        this.precioCompraActual = precioCompraActual;
     }
 
     public double getCantidad() {

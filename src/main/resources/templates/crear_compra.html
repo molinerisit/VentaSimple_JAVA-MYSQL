@@ -47,8 +47,8 @@
             </div>
 
 			<div class="mb-4">
-			    <label for="precioCompra" class="block text-gray-700">Precio por Unidad/Kilo:</label>
-			    <input type="number" id="precioCompra" name="precioCompra" th:field="*{precioCompra}" step="0.01" readonly
+			    <label for="precioCompraActual" class="block text-gray-700">Precio por Unidad/Kilo:</label>
+			    <input type="number" id="precioCompraActual" name="precioCompraActual" th:field="*{precioCompraActual}" step="0.01" readonly
 			        class="w-full p-2 border border-gray-300 rounded-md bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" />
 			</div>
 
@@ -94,7 +94,7 @@
     </div>
 
 	<script>
-	    const precioInput = document.getElementById('precioCompra');
+	    const precioInput = document.getElementById('precioCompraActual');
 	    const cantidadInput = document.getElementById('cantidad');
 	    const totalInput = document.getElementById('total');
 

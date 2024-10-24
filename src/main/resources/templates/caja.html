@@ -8,58 +8,59 @@
 	rel="stylesheet">
 </head>
 <body class="bg-gray-100">
-	<div class="container mx-auto py-8 px-4">
+	<div class="container mx-auto py-4 px-2">
 	    <!-- Usuario y Logout -->
-	    <div class="flex justify-between items-center p-4 bg-blue-100 border border-blue-300 rounded-lg shadow-lg">
+	    <div class="flex justify-between items-center p-2 bg-blue-100 border border-blue-300 rounded-lg shadow-md">
 	        <div>
-	            <h1 class="font-bold text-xl">Caja</h1>
+	            <h1 class="font-bold text-lg">Caja</h1>
 	        </div>
-
-	        <p class="text-lg">Bienvenido, <span th:text="${nombreUsuario}"></span></p>
-	        <div class="mt-4">
-	            <p>
-	                Hora actual: <span id="current-time"></span>
-	            </p>
-	            <p>
-	                Tiempo de caja abierta: <span id="time-elapsed"></span>
-	            </p>
+	        <p class="text-sm">Bienvenido, <span th:text="${nombreUsuario}"></span></p>
+	        <div>
+	            <p class="text-sm">Hora actual: <span id="current-time"></span></p>
+	            <p class="text-sm">Tiempo de caja abierta: <span id="time-elapsed"></span></p>
 	        </div>
 	        <form th:action="@{/logout}" method="post">
-	            <button type="submit" class="bg-red-500 text-white rounded-lg py-2 px-4 hover:bg-red-600 transition duration-300">
+	            <button type="submit" class="bg-red-500 text-white rounded-lg py-1 px-2 hover:bg-red-600 transition duration-300">
 	                Cerrar sesión
 	            </button>
 	        </form>
 	    </div>
-	</div>
-	<div class="container mx-auto py-8 px-4">
+
 	    <!-- Escanear Código de Barras -->
-	    <div class="flex space-x-4 mb-6 p-4 bg-blue-100 border border-blue-300 rounded-lg shadow-lg">
+	    <div class="flex space-x-2 mb-4 p-2 bg-blue-100 border border-blue-300 rounded-lg shadow-md">
 	        <div class="flex-1">
-	            <label for="codigoDeBarras" class="block font-semibold mb-2">Escanear Código de Barras:</label>
-	            <input type="text" id="codigoDeBarras" placeholder="Escanea el código de barras aquí" class="form-control w-full px-3 py-2 border rounded-md" />
+	            <label for="codigoDeBarras" class="block text-sm font-semibold mb-1">Escanear Código de Barras:</label>
+	            <div class="flex">
+	                <input type="text" id="codigoDeBarras" placeholder="Escanea aquí" class="flex-1 px-2 py-1 border rounded-md" />
+	                <button id="ingresarCodigoManual" class="bg-blue-500 text-white rounded-lg py-1 px-3 ml-1 hover:bg-blue-600 transition duration-300">Buscar</button>
+	            </div>	        
 	        </div>
 	        <div class="flex-1">
-	            <label for="dni" class="block font-semibold mb-2">DNI del Cliente:</label>
-	            <div class="flex w-full">
-	                <input type="text" id="dni-cliente" class="flex-1 px-3 py-2 border rounded-md" placeholder="Ingresa el DNI del cliente" />
-	                <button id="btn-aplicar-descuento" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300 ml-2">Aplicar Descuento <span class="text-xs">(Intro)</span></button>
-	            </div>
+	            <label for="dni" class="block text-sm font-semibold mb-1">DNI del Cliente:</label>
+	            <div class="flex">
+	                <input type="text" id="dni-cliente" class="flex-1 px-2 py-1 border rounded-md" placeholder="Ingresa DNI" />
+	                <button id="btn-aplicar-descuento" class="bg-blue-500 text-white rounded-lg py-1 px-3 ml-1 hover:bg-blue-600 transition duration-300">Aplicar Descuento (Intro)</button>
+					<!-- Mensaje de éxito o error -->
+				</div>
+				<div><div id="mensaje-descuento" class="mt-2 text-sm hidden"></div></div>
+
 	        </div>
 	    </div>
 
-	    <div class="flex space-x-4 mb-6">
+	    <!-- Productos Seleccionados y Detalles -->
+	    <div class="flex space-x-2 mb-4">
 	        <!-- Productos Seleccionados -->
-	        <div class="border border-gray-200 rounded-lg w-[450px] p-4 bg-gray-100 shadow-md"> <!-- Cambié el max-w a un ancho fijo -->
-	            <h2 class="text-xl font-semibold bg-gray-200 py-3 px-6">Productos Seleccionados</h2>
-	            <div class="p-6">
-	                <div id="productos-seleccionados" class="overflow-y-auto max-h-80">
+	        <div class="border border-gray-200 rounded-lg w-[450px] p-2 bg-gray-100 shadow-sm">
+	            <h2 class="text-lg font-semibold bg-gray-200 py-2 px-4">Productos Seleccionados</h2>
+	            <div class="p-2">
+	                <div id="productos-seleccionados" class="overflow-y-auto max-h-64">
 	                    <table class="min-w-full divide-y divide-gray-200">
 	                        <thead>
 	                            <tr class="bg-gray-50">
-	                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
-	                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Precio Unitario</th>
-	                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
-	                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+	                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
+	                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Precio Unitario</th>
+	                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Cantidad</th>
+	                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
 	                            </tr>
 	                        </thead>
 	                        <tbody id="tabla-productos-seleccionados">
@@ -80,49 +81,51 @@
 	            </div>
 	        </div>
 
-	        <div class="flex justify-center mt-6"> <!-- Contenedor flex para alinear los elementos horizontalmente -->
-	            <!-- Detalles de Costos -->
-	            <div class="max-w-xl mx-auto flex-1 text-center border border-gray-200 rounded-lg mx-2 p-4 bg-yellow-100 shadow-lg"> <!-- Cambié max-w a max-w-xl -->
-	                <div class="mt-4">
-	                    <span class="text-lg font-semibold">Subtotal: $<span id="subtotal-sin-descuentos">0.00</span></span>
-	                </div>
-	                <div class="mt-4">
-	                    <span class="text-lg font-semibold">Promociones: $<span id="monto-descuento" class="text-red-500">0.00</span></span>
-	                </div>
-	                <div class="mt-4">
-	                    <span class="text-lg font-semibold">Recargo credito: $<span id="monto-recargo" class="text-red-500">0.00</span></span>
-	                </div>
-	                <div class="mt-4">
-	                    <span class="font-bold text-xl bg-green-100 px-2 rounded">Total: $<span id="total-venta" class="text-green-600">0.00</span></span>
-	                </div>
-	                <div class="mt-4">
-	                    <span class="text-lg font-semibold">Efectivo: $<span id="monto-pagado-display">0.00</span></span>
-	                </div>
-	                <div class="mt-4">
-	                    <span class="font-bold text-xl bg-red-100 px-2 rounded">Vuelto: $<span id="vuelto"></span></span>
-	                </div>
-	            </div>
+	        <!-- Detalles de Costos -->
+			<div class="flex justify-center mt-6">
+			    <div class="max-w-xl mx-auto flex-1 text-center border border-gray-200 rounded-lg mx-2 p-4 bg-yellow-100 shadow-lg">
+			        <div class="mt-4">
+			            <span class="text-lg font-semibold">Subtotal: $<span id="subtotal-sin-descuentos">0.00</span></span>
+			        </div>
+			        <div class="mt-4">
+			            <span class="text-lg font-semibold">Promociones: $<span id="monto-descuento" class="text-red-500">0.00</span></span>
+			        </div>
+			        <div class="mt-4">
+			            <span class="text-lg font-semibold">Recargo crédito: $<span id="monto-recargo" class="text-red-500">0.00</span></span>
+			        </div>
+			        <div class="mt-4">
+			            <span class="font-bold text-2xl bg-green-100 px-2 rounded">Total: $<span id="total-venta" class="text-green-600">0.00</span></span>
+			        </div>
+			        <div class="mt-4">
+			            <span class="text-lg font-semibold">Efectivo: $<span id="monto-pagado-display">0.00</span></span>
+			        </div>
+			        <div class="mt-4">
+			            <span class="font-bold text-2xl bg-red-100 px-2 rounded">Vuelto: $<span id="vuelto"></span></span>
+			        </div>
+			    </div>
+			</div>
+
 
 	            <!-- Método de Pago -->
-	            <div class="max-w-xl mx-auto flex-1 text-center border border-gray-200 rounded-lg mx-2 ml-10 mr-10 p-4 bg-green-100 shadow-lg"> <!-- Cambié a max-w-xl -->
-	                <h2 class="text-lg font-semibold mb-2">Método de Pago</h2>
-	                <div class="flex flex-wrap justify-center gap-2 mb-4">
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-sm hover:bg-green-600 transition duration-300 w-28" onclick="seleccionarMetodoPago('EFECTIVO')">Efectivo <span class="text-xs">(E)</span></button>
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-sm hover:bg-green-600 transition duration-300 w-28" onclick="seleccionarMetodoPago('TARJETADEBITO')">Tarjeta debito <span class="text-xs">(B)</span></button>
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-sm hover:bg-green-600 transition duration-300 w-28" onclick="seleccionarMetodoPago('TARJETACREDITO')">Tarjeta credito <span class="text-xs">(C)</span></button>
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-sm hover:bg-green-600 transition duration-300 w-28" onclick="seleccionarMetodoPago('QR')">QR <span class="text-xs">(Q)</span></button>
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-sm hover:bg-green-600 transition duration-300 w-28" onclick="seleccionarMetodoPago('CUENTACORRIENTE')">CTA.CORRIENTE <span class="text-xs">(W)</span></button>
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-sm hover:bg-green-600 transition duration-300 w-28" onclick="">Cancelar <span class="text-xs">(O)</span></button>
+	            <div class="max-w-xl mx-auto flex-1 text-center border border-gray-200 rounded-lg mx-2 ml-10 mr-10 p-4 bg-green-100 shadow-lg">
+	                <h2 class="text-sm font-semibold mb-2">Método de Pago</h2>
+	                <div class="flex flex-wrap justify-center gap-2">
+	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('EFECTIVO')">Efectivo (E)</button>
+	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('TARJETADEBITO')">Débito (B)</button>
+	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('TARJETACREDITO')">Crédito (C)</button>
+	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('QR')">QR (Q)</button>
+	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('CUENTACORRIENTE')">CTA. CORRIENTE (W)</button>
+	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="">Cancelar (O)</button>
 	                </div>
 	            </div>
 
 	            <div class="mt-5 ml-10 mr-10">
-	                <button id="btn-registrar-venta" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300">Registrar Venta <span class="text-xs">(R)</span></button>
+	                <button id="btn-registrar-venta" class="bg-blue-500 text-white rounded-lg py-2 px-4 hover:bg-blue-600 transition duration-300">Registrar Venta (R)</button>
 	                <div id="campo-monto-pagado" class="mt-4 hidden max-w-xs mx-auto">
-	                    <label for="monto-pagado-input" class="block text-lg font-medium text-gray-700 mb-2">Monto Pagado:</label>
+	                    <label for="monto-pagado-input" class="block text-sm font-medium text-gray-700 mb-2">Monto Pagado:</label>
 	                    <div class="flex items-center bg-gray-200 rounded-md">
-	                        <span class="text-gray-600 px-3">$</span>
-	                        <input type="text" id="monto-pagado-input" class="block w-full px-3 py-2 text-lg rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-transparent appearance-none">
+	                        <span class="text-gray-600 px-2">$</span>
+	                        <input type="text" id="monto-pagado-input" class="block w-full px-2 py-1 text-sm rounded-md border-gray-300 focus:ring-blue-500 focus:border-blue-500 bg-transparent appearance-none">
 	                    </div>
 	                </div>
 	            </div>
@@ -130,16 +133,16 @@
 	    </div>
 
 	    <style>
-	        /* Asegura que el tamaño de la tabla sea fijo */
 	        #productos-seleccionados {
-	            max-width: 100%;
-	            overflow-x: auto; /* Permite desplazamiento horizontal si es necesario */
+	            width: 100%;
+	            border-collapse: collapse;
 	        }
-
-	        /* Ajusta el tamaño del texto en pantallas más pequeñas */
+	        #productos-seleccionados th, #productos-seleccionados td {
+	            padding: 6px;
+	        }
 	        @media (max-width: 768px) {
 	            th, td {
-	                font-size: 0.75rem; /* Tamaño de fuente más pequeño para dispositivos móviles */
+	                font-size: 0.75rem;
 	            }
 	        }
 	    </style>
@@ -168,10 +171,10 @@
 
 
 			<!-- Botones de Categorías y Productos -->
-			<div class="ml-4 mr-4 mb-6 p-4 bg-purple-100 border border-purple-300 rounded-lg shadow-lg">
-			    <div class="flex flex-wrap gap-2 mb-4">
+			<div class="ml-10 mr-10 mb-6 p-4 bg-purple-100 border border-purple-300 rounded-lg shadow-lg">
+			    <div class="flex flex-wrap gap-4 mb-4">
 			        <div th:each="categoria : ${categorias}">
-			            <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300 " 
+			            <button class="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300" 
 			                    th:text="${categoria.nombre}" 
 			                    th:onclick="'filtrarProductos(' + ${categoria.id} + ')'">
 			            </button>
@@ -181,8 +184,16 @@
 			            Ingresar Monto Manualmente
 			        </button>
 			    </div>
-			    <!-- <h2 class="text-xl font-semibold mb-4">Productos</h2>-->
-			    <div id="productos" class="space-y-4"></div>
+			    
+			    <!-- Botones de productos con borde grande y separados -->
+			    <div id="productos" class="flex flex-wrap gap-6">
+			        <div th:each="producto : ${productos}">
+			            <button class="bg-green-500 text-white py-4 px-6 rounded-lg hover:bg-green-600 transition duration-300 border-4 border-green-700 mb-2 mr-2">
+			                <!-- Nombre del producto -->
+			                <span th:text="${producto.nombre}"></span>
+			            </button>
+			        </div>
+			    </div>
 			</div>
 
 
@@ -270,6 +281,19 @@
 		            break;
 		    }
 		});
+		
+		document.getElementById('ingresarCodigoManual').addEventListener('click', () => {
+		    // Obtener el valor del input
+		    const codigoIngresado = document.getElementById('codigoDeBarras').value.trim();
+		    
+		    if (codigoIngresado) {
+		        // Llamar a la función para procesar el código ingresado
+		        updateCodigoDeBarras(codigoIngresado);
+		    } else {
+		        alert("Por favor, ingresa un código válido.");
+		    }
+		});
+
 
 		// Función para cerrar modales y salir de los inputs al presionar Escape
 		function cerrarModalesYSalirInputs() {
@@ -316,7 +340,6 @@
 		document.getElementById('btn-aplicar-descuento').addEventListener('click', function() {
 		    const dni = document.getElementById('dni-cliente').value;
 		    console.log("DNI del cliente:", dni); // Verifica el DNI
-
 		    axios.get(`/clientes/dni/${dni}`)
 		        .then(response => {
 		            console.log("Respuesta del servidor:", response.data); // Verifica la respuesta
@@ -338,20 +361,40 @@
 
 
 
-		function aplicarDescuento(descuento) {
-		    let subtotalSinDescuentos = parseFloat(document.getElementById('subtotal-sin-descuentos').textContent.replace(/[^0-9.-]+/g, "")); // Limpiar el valor
-		    console.log("Valor subtotal antes de aplicar el descuento:", subtotalSinDescuentos); // Verificar el valor del subtotal
-		    if (!isNaN(subtotalSinDescuentos)) {
-		        const descuentoAplicado = subtotalSinDescuentos * (descuento / 100);
-		        const totalConDescuento = subtotalSinDescuentos - descuentoAplicado;
+		function mostrarMensajeDescuento(tipo, mensaje) {
+		     const mensajeElemento = document.getElementById('mensaje-descuento');
+		     mensajeElemento.textContent = mensaje;
+		     
+		     if (tipo === 'error') {
+		         mensajeElemento.classList.remove('text-green-500');
+		         mensajeElemento.classList.add('text-red-500');
+		     } else if (tipo === 'exito') {
+		         mensajeElemento.classList.remove('text-red-500');
+		         mensajeElemento.classList.add('text-green-500');
+		     }
 
-		        document.getElementById('monto-descuento').textContent = descuentoAplicado.toFixed(2); // Mostrar el monto de descuento
-		        document.getElementById('total-venta').textContent = totalConDescuento.toFixed(2); // Mostrar el total con descuento
-		    } else {
-		        alert('El subtotal no es un valor numérico válido');
-		    }
-		}
+		     mensajeElemento.classList.remove('hidden'); // Mostrar el mensaje
+		 }
 
+		 // Función para aplicar descuento
+		 function aplicarDescuento(descuento) {
+		     let subtotalSinDescuentos = parseFloat(document.getElementById('subtotal-sin-descuentos').textContent.replace(/[^0-9.-]+/g, "")); // Limpiar el valor
+		     console.log("Valor subtotal antes de aplicar el descuento:", subtotalSinDescuentos); // Verificar el valor del subtotal
+
+		     if (!isNaN(subtotalSinDescuentos)) {
+		         const descuentoAplicado = subtotalSinDescuentos * (descuento / 100);
+		         const totalConDescuento = subtotalSinDescuentos - descuentoAplicado;
+
+		         document.getElementById('monto-descuento').textContent = descuentoAplicado.toFixed(2); // Mostrar el monto de descuento
+		         document.getElementById('total-venta').textContent = totalConDescuento.toFixed(2); // Mostrar el total con descuento
+
+		         // Mostrar mensaje de éxito
+		         mostrarMensajeDescuento('exito', `Descuento del ${descuento}% aplicado correctamente.`);
+		     } else {
+		         // Mostrar mensaje de error
+		         mostrarMensajeDescuento('error', 'El subtotal no es un valor numérico válido.');
+		     }
+		 }
 	    
 	
 		
@@ -441,6 +484,7 @@
 		            mostrarProductos(response.data);
 		        });
 		}
+		
 		function mostrarProductos(productos) {
 		    const contenedorProductos = document.getElementById('productos');
 		    contenedorProductos.innerHTML = '';
@@ -602,8 +646,6 @@
 		}
 
 
-
-
 		function actualizarTablaProductosSeleccionados() {
 		    const tablaProductos = document.getElementById('tabla-productos-seleccionados');
 		    tablaProductos.innerHTML = '';
@@ -642,9 +684,7 @@
 		        });
 		    });
 		}
-
-		
-		
+			
 		function calcularVuelto(montoPagado, total) {
 		    return montoPagado - total;
 		}
@@ -827,7 +867,6 @@
 		    document.getElementById('dni-cliente').value = '';
 		}
 
-		
 		// Al abrir la caja, debes asegurarte de que este código se ejecute una vez
 		if (!sessionStorage.getItem('horaInicio')) {
 		    sessionStorage.setItem('horaInicio', new Date().toISOString()); // Solo se guarda si no existe
@@ -860,12 +899,6 @@
 		}, 1000);
 		
 		console.log('Detalles de la venta:', JSON.stringify(venta, null, 2));
-
-
-		
-		
-
-
 		
 	</script>
 </body>

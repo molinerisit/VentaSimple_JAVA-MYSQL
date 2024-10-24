@@ -1,6 +1,7 @@
 package com.gestionsimple.sistema_ventas.service;
 
 import com.gestionsimple.sistema_ventas.model.Categoria;
+import com.gestionsimple.sistema_ventas.model.HistorialPrecio;
 import com.gestionsimple.sistema_ventas.model.Producto;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public interface ProductoService {
     void actualizarPrecioCompra(Long id, double newPrecioCompra);
     boolean productoInvolucradoEnVenta(Long id); // Nuevo método
 	List<Producto> buscarPorCategoriaYActivo(Categoria categoria, boolean activo);
+    List<HistorialPrecio> obtenerHistorialPrecios(Long id);
 	Optional<Producto> getProductoByCodigoDeBarras(String codigoDeBarras);
 }
 

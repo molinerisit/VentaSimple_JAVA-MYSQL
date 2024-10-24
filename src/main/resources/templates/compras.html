@@ -45,7 +45,7 @@
 						<td th:text="${#numbers.formatDecimal(compra.total, 1, 2)}" class="py-2 px-4">100.00</td>
                         <td th:text="${compra.producto.nombre}" class="py-2 px-4">Carne</td>
                         <td th:text="${compra.proveedor.nombre}" class="py-2 px-4">Proveedor</td>
-                        <td th:text="${#numbers.formatDecimal(compra.precioCompra, 1, 2)}" class="py-2 px-4"></td>
+                        <td th:text="${#numbers.formatDecimal(compra.precioCompraActual, 1, 2)}" class="py-2 px-4"></td>
 						<td th:text="${#numbers.formatDecimal(compra.precioVenta, 1, 2)}" class="py-2 px-4"></td>
 						<td th:text="${compra.PorcentajeRentabilidad} + '%' " class="py-2 px-4"></td> <!-- Mostrar porcentaje con el símbolo -->
                         <td th:text="${compra.medioDePago}" class="py-2 px-4"></td>

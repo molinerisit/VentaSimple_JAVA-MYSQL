@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalles de Cierre de Caja</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-full mx-auto py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold mb-6">Detalles del Cierre de Caja</h1>
+
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Fecha de Cierre</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${fechaCierreFormateada}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Monto Inicial</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.montoInicial}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Ventas</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalVentas}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Descuentos</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalDescuentos}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Recargos</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalRecargos}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagos Efectivo</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalPagosEfectivo}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagos en Débito</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalPagosDebito}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagos en Crédito</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalPagosCredito}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagos con QR</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalPagosQR}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Vuelto</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${cierreCaja.totalVuelto}"></dd>
+                </div>
+            </dl>
+        </div>
+
+        <a href="/cierrecaja" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-4">Volver</a>
+    </div>
+</body>
+</html>

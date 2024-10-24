@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cierre de Caja</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">Cierre de Caja</h1>
+
+        <!-- Formulario para ingresar el monto inicial -->
+        <form method="post" action="/cierrecaja" class="mb-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
+                <div>
+                    <label for="montoInicial" class="text-sm font-medium text-gray-700">Monto Inicial en Caja:</label>
+                    <input type="number" step="0.01" id="montoInicial" name="montoInicial" 
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                           th:value="${montoInicial}">
+                </div>
+                <div>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full">Guardar Monto Inicial</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Formulario para realizar el cierre de caja -->
+        <form method="post" action="/cierrecaja/cierre" class="mb-8 text-center">
+            <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-6 rounded">Realizar Cierre de Caja</button>
+        </form>
+
+        <!-- Mostrar resumen del cierre de caja -->
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-6 bg-white shadow-md rounded-lg mb-8">
+            <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Monto Inicial</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${montoInicial}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagado en Efectivo</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${totalPagado}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagado en Débito</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${totalPagosDebito}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagado en Crédito</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${totalPagosCredito}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Pagado con QR</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${totalPagosQR}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total Vuelto</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${totalVuelto}"></dd>
+                </div>
+                <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Total en Caja</dt>
+                    <dd class="mt-1 text-sm text-gray-900" th:text="${totalCaja}"></dd>
+                </div>
+            </dl>
+        </div>
+
+        <!-- Listado de cierres anteriores -->
+        <div class="mb-8">
+            <h2 class="text-xl font-bold mb-4">Cierres de Caja Anteriores</h2>
+            <div class="flex flex-wrap gap-4">
+                <div th:each="cierre : ${cierresCaja}">
+                    <form th:action="@{/cierrecaja/{id}(id=${cierre.id})}" method="get">
+                        <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            <span th:text="${#temporals.format(cierre.fechaCierre, 'dd/MM/yyyy HH:mm')}"></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enlace a detalles de ventas -->
+        <div class="text-center">
+            <a href="/detalles-venta" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded block w-max mx-auto">Ver detalles de ventas</a>
+        </div>
+    </div>
+</body>
+</html>

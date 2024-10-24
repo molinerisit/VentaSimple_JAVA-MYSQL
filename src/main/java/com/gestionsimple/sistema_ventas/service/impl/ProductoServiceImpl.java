@@ -1,7 +1,9 @@
 package com.gestionsimple.sistema_ventas.service.impl;
 
 import com.gestionsimple.sistema_ventas.model.Categoria;
+import com.gestionsimple.sistema_ventas.model.HistorialPrecio;
 import com.gestionsimple.sistema_ventas.model.Producto;
+import com.gestionsimple.sistema_ventas.repository.HistorialPrecioRepository;
 import com.gestionsimple.sistema_ventas.repository.ProductoRepository;
 import com.gestionsimple.sistema_ventas.service.ProductoService;
 
@@ -21,6 +23,9 @@ public class ProductoServiceImpl implements ProductoService {
 
     private static final Logger logger = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
+    @Autowired
+    private HistorialPrecioRepository historialPrecioRepository;
+    
     @Autowired
     private ProductoRepository productoRepository;
 
@@ -53,34 +58,35 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional
     public void guardarProducto(Producto producto) {
-        // Verifica si el producto ya tiene un ID (es decir, es una actualización)
         if (producto.getId() == null) {
-            // Solo verificar si el código de barras está asociado a otro producto si es un nuevo producto
-            if (producto.getCodigoDeBarras() != null && 
-                productoRepository.findByCodigoDeBarras(producto.getCodigoDeBarras()).isPresent()) {
+            if (producto.getCodigoDeBarras() != null && productoRepository.findByCodigoDeBarras(producto.getCodigoDeBarras()).isPresent()) {
                 throw new RuntimeException("El código de barras ya está asociado a otro producto.");
             }
+        }
+
+        // Establecer precioCompra con valor predeterminado de 0 si no se proporciona
+        if (producto.getPrecioCompraActual() != null) {
+            producto.setPrecioCompra(producto.getPrecioCompraActual());
+        } else {
+            logger.warn("El precio de compra actual es null, usando el precio de compra predeterminado de 0.");
+            producto.setPrecioCompra(BigDecimal.ZERO); // Valor predeterminado
         }
 
         logger.info("Guardando producto: {}", producto);
         productoRepository.save(producto);
     }
 
-
-
     @Override
     @Transactional
     public void actualizarProducto(Producto producto) {
         logger.info("Actualizando producto: {}", producto);
 
-        // Recupera el producto existente desde la base de datos
         Producto productoExistente = productoRepository.findById(producto.getId())
             .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        // Actualiza solo los campos que necesites, sin tocar la lista de compras
+        // Actualizando solo los campos necesarios
         productoExistente.setNombre(producto.getNombre());
         productoExistente.setDescripcion(producto.getDescripcion());
-        productoExistente.setPrecioCompra(producto.getPrecioCompra());
         productoExistente.setPrecioVenta(producto.getPrecioVenta());
         productoExistente.setStock(producto.getStock());
         productoExistente.setEsPesable(producto.getEsPesable());
@@ -89,12 +95,22 @@ public class ProductoServiceImpl implements ProductoService {
         productoExistente.setCodigoDeBarras(producto.getCodigoDeBarras());
         productoExistente.setPorcentajeRentabilidad(producto.getPorcentajeRentabilidad());
 
-        // Actualiza los cálculos relevantes, si es necesario
-        productoExistente.actualizarInversionTotal();
+        // Actualizar el precio de compra solo si es proporcionado
+        if (producto.getPrecioCompra() != null) {
+            productoExistente.actualizarPrecioCompra(producto.getPrecioCompra());
+        }
 
-        // Guarda los cambios
+        if (producto.getPrecioCompraActual() != null) {
+            productoExistente.setPrecioCompraActual(producto.getPrecioCompraActual());
+        }
+
+        productoExistente.actualizarInversionTotal(productoExistente.getStock());
+
         productoRepository.save(productoExistente);
     }
+
+
+
 
     @Override
     public List<Producto> obtenerTodosLosProductos() {
@@ -123,14 +139,31 @@ public class ProductoServiceImpl implements ProductoService {
     @Override
     @Transactional
     public void actualizarPrecioCompra(Long id, double newPrecioCompra) {
-        logger.info("Actualizando precio de compra para producto con ID: {}", id);
+        logger.info("Actualizando precio de compra para el producto con ID: {}", id);
         Producto producto = productoRepository.findById(id).orElse(null);
+
         if (producto != null) {
-            producto.setPrecioCompra(BigDecimal.valueOf(newPrecioCompra)); // Convertir double a BigDecimal
+            BigDecimal nuevoPrecio = BigDecimal.valueOf(newPrecioCompra);
+
+            if (producto.getPrecioCompraActual() == null) {
+                producto.setPrecioCompraAnterior(null);
+                producto.setPrecioCompra(nuevoPrecio);
+                producto.setPrecioCompraActual(nuevoPrecio);
+            } else {
+                producto.setPrecioCompraAnterior(producto.getPrecioCompra());
+                producto.setPrecioCompra(producto.getPrecioCompraActual());
+                producto.setPrecioCompraActual(nuevoPrecio);
+            }
+
             productoRepository.save(producto);
+            logger.info("Precios actualizados para el producto con ID: {}", id);
+        } else {
+            logger.error("Producto con ID {} no encontrado.", id);
+            throw new RuntimeException("Producto no encontrado");
         }
     }
 
+    
     @Override
     public boolean productoInvolucradoEnVenta(Long id) {
         // Implementación para verificar si un producto está involucrado en alguna venta
@@ -160,6 +193,14 @@ public class ProductoServiceImpl implements ProductoService {
 
         return producto;
     }
+
+    @Override
+    public List<HistorialPrecio> obtenerHistorialPrecios(Long id) {
+        logger.info("Obteniendo historial de precios para el producto con ID: {}", id);
+        return historialPrecioRepository.findByProductoId(id); // Asegúrate de que el repositorio tenga este método
+    }
+
+	
    
 
 }

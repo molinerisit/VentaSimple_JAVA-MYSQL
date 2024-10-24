@@ -1,8 +1,10 @@
 package com.gestionsimple.sistema_ventas.controller;
 
 import com.gestionsimple.sistema_ventas.model.Producto;
+import com.gestionsimple.sistema_ventas.repository.HistorialPrecioRepository;
 import com.gestionsimple.sistema_ventas.model.Compra;
 import com.gestionsimple.sistema_ventas.model.DetalleVenta;
+import com.gestionsimple.sistema_ventas.model.HistorialPrecio;
 import com.gestionsimple.sistema_ventas.model.Categoria;
 import com.gestionsimple.sistema_ventas.service.ProductoService;
 import com.gestionsimple.sistema_ventas.service.ScannerConfigService;
@@ -43,6 +45,9 @@ public class ProductoController {
     private CategoriaService categoriaService;
 
     @Autowired
+    private HistorialPrecioRepository historialPrecioRepository;
+    
+    @Autowired
     private DetalleVentaService detalleVentaService;
     
     private final ScannerConfigService scannerConfigService;  // Asegúrate de declarar el servicio
@@ -55,26 +60,22 @@ public class ProductoController {
         this.categoriaService = categoriaService;
         this.scannerConfigService = scannerConfigService;  // Inyección del servicio
     }
-    // Mostrar todos los productos
+ // Mostrar todos los productos
     @GetMapping
     public String mostrarProductos(Model model) {
-        logger.info("Mostrando todos los productos");
         List<Producto> productos = productoService.obtenerTodosLosProductos();
-        
-        boolean alertaBajoStock = false; // Variable para verificar si hay productos con bajo stock
-        boolean alertaAgotado = false; // Variable para verificar si hay productos agotados
+
+        boolean alertaBajoStock = false;
+        boolean alertaAgotado = false;
 
         for (Producto producto : productos) {
-            logger.info("Producto: {} - Precio de venta: {}", producto.getNombre(), producto.getPrecioVenta());
-
-            // Verificar stock y establecer alertas
             if (producto.getStock() <= 1) {
-                alertaAgotado = true; // Hay productos agotados
+                alertaAgotado = true;
             } else if (producto.getStock() <= 3) {
-                alertaBajoStock = true; // Hay productos con bajo stock
+                alertaBajoStock = true;
             }
 
-            if (producto.getPrecioCompra().compareTo(BigDecimal.ZERO) > 0) {
+            if (producto.getPrecioCompra() != null && producto.getPrecioCompra().compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal diferencia = producto.getPrecioVenta().subtract(producto.getPrecioCompra());
                 BigDecimal porcentajeRentabilidad = diferencia
                         .divide(producto.getPrecioCompra(), RoundingMode.HALF_UP)
@@ -95,7 +96,6 @@ public class ProductoController {
     }
 
     // Mostrar formulario de creación de producto
- // Mostrar formulario de creación de producto
     @GetMapping("/crear")
     public String mostrarFormularioCreacion(@RequestParam(name = "codigoDeBarras", required = false) String codigoDeBarras, Model model) {
         Producto nuevoProducto = new Producto();
@@ -105,12 +105,24 @@ public class ProductoController {
             nuevoProducto.setCodigoDeBarras(codigoDeBarras);
         }
 
-        System.out.println("Código de Barras: " + nuevoProducto.getCodigoDeBarras()); // Verificar el valor aquí
-        
         model.addAttribute("producto", nuevoProducto);
         model.addAttribute("categorias", categoriaService.getAllCategorias());
 
         return "crear_producto";
+    }
+
+    // Guardar producto
+    @PostMapping("/guardar")
+    public String guardarProducto(@ModelAttribute("producto") Producto producto, Model model) {
+        producto.setFechaRegistro(LocalDate.now());
+        producto.setActivo(true);
+        if (producto.getCodigoDeBarras() == null || producto.getCodigoDeBarras().isEmpty()) {
+            String scannedBarcode = scannerConfigService.readBarcode();
+            producto.setCodigoDeBarras(scannedBarcode);
+        }
+        productoService.guardarProducto(producto);
+        model.addAttribute("mensaje", "Producto guardado exitosamente");
+        return "redirect:/productos";
     }
 
     
@@ -130,23 +142,6 @@ public class ProductoController {
         return ResponseEntity.ok(scannedBarcode);
     }
 
-    
-    // Guardar producto
-    @PostMapping("/guardar")
-    public String guardarProducto(@ModelAttribute("producto") Producto producto, Model model) {
-        logger.info("Guardando producto: {}", producto);
-        producto.setFechaRegistro(LocalDate.now());
-        producto.setActivo(true); // Asegurar que esté activo al guardar
-        if (producto.getCodigoDeBarras() == null || producto.getCodigoDeBarras().isEmpty()) {
-            // Obtener el código de barras escaneado desde el escáner configurado
-            String scannedBarcode = scannerConfigService.readBarcode();
-            producto.setCodigoDeBarras(scannedBarcode);
-        }
-        productoService.guardarProducto(producto);
-        model.addAttribute("mensaje", "Producto guardado exitosamente");
-        return "redirect:/productos";
-    }
-
     // Mostrar formulario de edición de producto
     @GetMapping("/editar/{id}")
     public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
@@ -162,15 +157,138 @@ public class ProductoController {
         return "editar_producto";
     }
 
-    // Procesar edición de producto
     @PostMapping("/editar")
     public String procesarEdicion(@ModelAttribute("producto") Producto producto, Model model) {
         logger.info("Actualizando producto: {}", producto);
-        productoService.actualizarProducto(producto);
-        model.addAttribute("mensaje", "Producto actualizado exitosamente");
+
+        // Obtener el producto actual antes de la actualización
+        Producto productoExistente = productoService.obtenerProductoPorId(producto.getId());
+
+        if (productoExistente != null) {
+            // Verificar si el precio de compra ha cambiado
+            if (productoExistente.getPrecioCompra().compareTo(producto.getPrecioCompra()) != 0) {
+                // Crear un nuevo registro de historial de precios solo para precio de compra
+                HistorialPrecio historialPrecio = new HistorialPrecio();
+                historialPrecio.setProducto(productoExistente); // Asignar el producto existente
+                historialPrecio.setPrecioCompra(productoExistente.getPrecioCompra()); // Precio anterior
+                historialPrecio.setPrecioVenta(null); // No se actualiza el precio de venta
+                historialPrecio.setFechaModificacion(LocalDate.now());
+
+                // Guardar en el historial de precios
+                historialPrecioRepository.save(historialPrecio);
+                logger.info("Historial de precios (compra) actualizado para el producto con ID: {}", producto.getId());
+            }
+
+            // Verificar si el precio de venta ha cambiado
+            if (productoExistente.getPrecioVenta().compareTo(producto.getPrecioVenta()) != 0) {
+                // Crear un nuevo registro de historial de precios solo para precio de venta
+                HistorialPrecio historialPrecio = new HistorialPrecio();
+                historialPrecio.setProducto(productoExistente); // Asignar el producto existente
+                historialPrecio.setPrecioCompra(null); // No se actualiza el precio de compra
+                historialPrecio.setPrecioVenta(productoExistente.getPrecioVenta()); // Precio anterior
+                historialPrecio.setFechaModificacion(LocalDate.now());
+
+                // Guardar en el historial de precios
+                historialPrecioRepository.save(historialPrecio);
+                logger.info("Historial de precios (venta) actualizado para el producto con ID: {}", producto.getId());
+            }
+
+            // Actualizar el producto en la base de datos
+            productoService.actualizarProducto(producto);
+            model.addAttribute("mensaje", "Producto actualizado exitosamente");
+        } else {
+            model.addAttribute("error", "Producto no encontrado");
+        }
+
         return "redirect:/productos";
     }
 
+ // Actualizar precios y manejar el historial
+    @PostMapping("/{id}/actualizarPrecio")
+    public String actualizarPrecio(
+            @PathVariable Long id,
+            @RequestParam("newPrecioCompra") BigDecimal newPrecioCompra,
+            @RequestParam("newPrecioVenta") BigDecimal newPrecioVenta,
+            RedirectAttributes redirectAttributes) {
+
+        Producto producto = productoService.obtenerProductoPorId(id);
+
+        if (producto != null) {
+            // Verificar si ha habido un cambio de precio de compra
+            if (newPrecioCompra != null && newPrecioCompra.compareTo(producto.getPrecioCompra()) != 0) {
+                producto.setPrecioCompra(newPrecioCompra);
+                producto.setPrecioCompraCambio(true);
+                producto.setFechaCambioPrecio(LocalDate.now());
+            }
+
+            // Actualizar precio de venta
+            producto.setPrecioVenta(newPrecioVenta);
+
+            productoService.guardarProducto(producto);
+
+            // Crear el historial de precios
+            HistorialPrecio historialPrecio = new HistorialPrecio();
+            historialPrecio.setProducto(producto);
+            historialPrecio.setPrecioCompra(newPrecioCompra);
+            historialPrecio.setPrecioVenta(newPrecioVenta);
+            historialPrecio.setFechaModificacion(LocalDate.now());
+
+            // Guardar en el repositorio
+            historialPrecioRepository.save(historialPrecio);
+
+            redirectAttributes.addFlashAttribute("mensaje", "Precios actualizados correctamente.");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Producto no encontrado.");
+        }
+
+        return "redirect:/productos";
+    }
+
+
+    // Verificar cambio de precio
+    @PostMapping("/{id}/verificarCambioPrecio")
+    public String verificarCambioPrecio(@PathVariable("id") Long id, RedirectAttributes redirectAttributes) {
+        Producto producto = productoService.obtenerProductoPorId(id);
+        if (producto != null && producto.isPrecioCompraCambio()) {
+            producto.setPrecioCompraCambio(false); // Marcar como verificado
+            productoService.guardarProducto(producto);
+            redirectAttributes.addFlashAttribute("message", "Cambio de precio verificado.");
+        }
+        return "redirect:/productos";
+    }
+
+
+    @PostMapping("/{id}/actualizarPrecioCompra")
+    public String actualizarPrecioCompra(@RequestParam("id") Long id, @RequestParam("newPrecioCompra") BigDecimal newPrecioCompra, RedirectAttributes redirectAttributes) {
+        Producto productoActual = productoService.obtenerProductoPorId(id);
+        BigDecimal precioAnterior = productoActual.getPrecioCompra();
+
+        // Comprobar si el precio ha cambiado antes de la actualización
+        if (!precioAnterior.equals(newPrecioCompra)) {
+            // Marcar el cambio de precio
+            productoActual.setPrecioCompraCambio(true); 
+
+            // Actualizar el precio de compra
+            productoActual.setPrecioCompra(newPrecioCompra); 
+            
+            // Aquí se compara si el precio actual es mayor o menor al anterior
+            if (productoActual.getPrecioCompraActual().compareTo(precioAnterior) > 0) {
+                redirectAttributes.addFlashAttribute("mensaje", "El precio de compra ha subido.");
+            } else {
+                redirectAttributes.addFlashAttribute("mensaje", "El precio de compra ha bajado.");
+            }
+            
+            productoService.guardarProducto(productoActual); // Guardar el producto con el cambio
+            redirectAttributes.addFlashAttribute("alertaCambioPrecio", true);
+        } else {
+            productoActual.setPrecioCompraCambio(false); // No ha cambiado el precio
+            productoService.guardarProducto(productoActual); // Asegúrate de guardar cualquier cambio
+        }
+
+        redirectAttributes.addFlashAttribute("message", "Precio de compra actualizado correctamente.");
+        return "redirect:/productos";
+    }
+    
     // Eliminar producto
     @GetMapping("/eliminar/{id}")
     public String eliminarProducto(@PathVariable Long id, Model model) {
@@ -230,24 +348,6 @@ public class ProductoController {
         return "redirect:/productos";
     }
 
-    // Actualizar precio de compra
-    @PostMapping("/{id}/actualizarPrecioCompra")
-    public String actualizarPrecioCompra(@RequestParam("id") Long id, @RequestParam("newPrecioCompra") Double newPrecioCompra, RedirectAttributes redirectAttributes) {
-        productoService.actualizarPrecioCompra(id, newPrecioCompra);
-        redirectAttributes.addFlashAttribute("message", "Precio de compra actualizado correctamente.");
-        return "redirect:/productos";
-    }
-
-    
-    // Mostrar rentabilidad
-    @GetMapping("/rentabilidad")
-    public String mostrarRentabilidad(Model model) {
-        List<Producto> productos = productoService.obtenerTodosLosProductos();
-        model.addAttribute("productos", productos);
-        return "rentabilidad";
-    }
-    
-    
     @GetMapping("/buscarProductoPorCodigo/{codigo}")
     @ResponseBody
     public ResponseEntity<Producto> buscarProductoPorCodigo(@PathVariable String codigo) {
@@ -256,89 +356,6 @@ public class ProductoController {
             return ResponseEntity.ok(productoOpt.get()); // Devuelve el producto encontrado
         } else {
             return ResponseEntity.notFound().build(); // Devuelve un 404 si no se encuentra el producto
-        }
-    }
-
-
-
- // Actualizar datos de rentabilidad
-    @PostMapping("/{id}/actualizarRentabilidadDatos")
-    @ResponseBody
-    public ResponseEntity<String> actualizarRentabilidadDatos(@PathVariable("id") Long idProducto, @RequestBody Map<String, Double> datos) {
-        Producto producto = productoService.obtenerProductoPorId(idProducto);
-
-        if (producto == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Producto no encontrado");
-        }
-
-        try {
-            // Actualizar datos de rentabilidad en el producto
-            producto.setPorcentajeRentabilidad(BigDecimal.valueOf(datos.getOrDefault("porcentajeRentabilidad", 0.0)));
-            producto.setPrecioVenta(BigDecimal.valueOf(datos.getOrDefault("precioVenta", 0.0)));
-            producto.setGananciaTotal(BigDecimal.valueOf(datos.getOrDefault("gananciaTotal", 0.0)));
-            producto.setGananciaUnitaria(BigDecimal.valueOf(datos.getOrDefault("gananciaUnitaria", 0.0)));
-            producto.setInversionTotal(BigDecimal.valueOf(datos.getOrDefault("inversionTotal", 0.0)));
-            producto.setDineroTotalRecaudado(BigDecimal.valueOf(datos.getOrDefault("dineroTotalRecaudado", 0.0)));
-            producto.setGrasaDesperdicio(BigDecimal.valueOf(datos.getOrDefault("grasaDesperdicio", 0.0)));
-            producto.setOtrosDesperdicios(BigDecimal.valueOf(datos.getOrDefault("otrosDesperdicios", 0.0)));
-
-            // Obtener el stock original como int
-            int cantidadLote = producto.getStock(); // Stock inicial del producto
-
-            // Obtener los desperdicios
-            Double grasaDesperdicio = datos.getOrDefault("grasaDesperdicio", 0.0);
-            Double otrosDesperdicios = datos.getOrDefault("otrosDesperdicios", 0.0);
-
-            // Calcular el nuevo stock (kilos utilizables)
-            Double nuevoStockDouble = cantidadLote - grasaDesperdicio - otrosDesperdicios;
-            if (nuevoStockDouble < 0) {
-                nuevoStockDouble = 0.0; // Asegurar que no sea negativo
-            }
-
-            // Convertir a int si el stock debe ser entero
-            int nuevoStock = nuevoStockDouble.intValue();
-
-            // Actualizar el stock del producto
-            producto.setStock(nuevoStock);
-            
-            // Obtener el precio de compra original
-            BigDecimal precioCompraOriginal = producto.getPrecioCompra(); // Suponiendo que tienes un campo de precio de compra en el producto
-
-            // Calcular el nuevo precio de compra basado en los kilos utilizables
-            if (nuevoStock > 0) {
-                BigDecimal precioCompraAjustado = precioCompraOriginal.multiply(BigDecimal.valueOf(cantidadLote)).divide(BigDecimal.valueOf(nuevoStock), RoundingMode.HALF_UP);
-                producto.setPrecioCompra(precioCompraAjustado); // Actualizar el precio de compra del producto
-            } else {
-                // Si no hay stock utilizable, el precio de compra ajustado podría ser 0 o un valor que definas
-                producto.setPrecioCompra(BigDecimal.ZERO);
-            }
-
-            // Guardar el producto con todos los cambios
-            productoService.guardarProducto(producto);
-
-            // Buscar la última compra no actualizada del producto
-            List<Compra> compras = compraService.findComprasByProductoIdOrderByIdAsc(producto.getId());
-
-            for (Compra compra : compras) {
-                if (compra.getGananciaTotal().compareTo(BigDecimal.ZERO) == 0 || 
-                    compra.getGananciaUnitaria().compareTo(BigDecimal.ZERO) == 0) {
-                    
-                    // Actualizar los valores de rentabilidad solo si no se han actualizado antes
-                    compra.setPorcentajeRentabilidad(producto.getPorcentajeRentabilidad());
-                    compra.setGananciaTotal(producto.getGananciaTotal().multiply(BigDecimal.valueOf(compra.getCantidad())));
-                    compra.setGananciaUnitaria(producto.getGananciaUnitaria());
-                    // Actualizar el precio de venta también
-                    compra.setPrecioVenta(producto.getPrecioVenta());
-                    // Guardar la compra actualizada
-                    compraService.saveCompra(compra);
-                    break; // Salir del bucle después de actualizar la primera compra no modificada
-                }
-            }
-
-            return ResponseEntity.ok("Datos de rentabilidad y stock actualizados correctamente.");
-        } catch (Exception e) {
-            logger.error("Error al actualizar datos de rentabilidad y stock", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar datos");
         }
     }
 
@@ -368,6 +385,33 @@ public class ProductoController {
         model.addAttribute("alertaBajoStock", alertaBajoStock);
         model.addAttribute("alertaAgotado", alertaAgotado);
         return "GestionStock"; // Retorna la vista adecuada
+    }
+    
+    @GetMapping("/gestionPrecios")
+    public String mostrarGestionPrecios(Model model) {
+        logger.info("Mostrando gestión de stock");
+        List<Producto> productos = productoService.obtenerTodosLosProductos();
+        
+        boolean alertaBajoStock = false; // Variable para verificar si hay productos con bajo stock
+        boolean alertaAgotado = false; // Variable para verificar si hay productos agotados
+
+        for (Producto producto : productos) {
+            logger.info("Producto: {} - Precio de venta: {}", producto.getNombre(), producto.getPrecioVenta());
+
+            // Verificar stock y establecer alertas
+            if (producto.getStock() <= 1) {
+                alertaAgotado = true; // Hay productos agotados
+            } else if (producto.getStock() <= 3) {
+                alertaBajoStock = true; // Hay productos con bajo stock
+            }
+
+            // Otros cálculos relacionados con el producto si es necesario
+        }
+
+        model.addAttribute("productos", productos);
+        model.addAttribute("alertaBajoStock", alertaBajoStock);
+        model.addAttribute("alertaAgotado", alertaAgotado);
+        return "GestionPrecios"; // Retorna la vista adecuada
     }
 
     

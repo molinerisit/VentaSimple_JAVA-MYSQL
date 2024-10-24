@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historial de Precios</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Historial de Precios del Producto</h1>
+
+        <div class="bg-white shadow-md rounded-lg p-4">
+            <table class="min-w-full table-auto">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="px-4 py-2 text-left">Fecha de Modificación</th>
+                        <th class="px-4 py-2 text-left">Precio de Compra</th>
+                        <th class="px-4 py-2 text-left">Precio de Venta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Itera sobre la lista de historial de precios -->
+                    <tr th:each="historial : ${historialPrecios}" class="border-b">
+                        <td class="px-4 py-2">
+                            <!-- Fecha de modificación -->
+                            <span th:text="${historial.fechaModificacion}"></span>
+                        </td>
+                        <td class="px-4 py-2">
+                            <!-- Precio de compra -->
+                            <span th:text="${historial.precioCompra}"></span>
+                        </td>
+                        <td class="px-4 py-2">
+                            <!-- Precio de venta -->
+                            <span th:text="${historial.precioVenta}"></span>
+                        </td>
+                    </tr>
+                    <!-- Si no hay historial, mostrar un mensaje -->
+                    <tr th:if="${historialPrecios.empty}">
+                        <td colspan="3" class="text-center py-4">No hay historial de precios disponible.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4">
+            <a href="/productos" class="text-blue-500 hover:underline">Volver a productos</a>
+        </div>
+    </div>
+</body>
+</html>
