@@ -36,6 +36,7 @@ public class Producto {
     private BigDecimal insumosVarios = BigDecimal.ZERO;
     private BigDecimal grasaDesperdicio = BigDecimal.ZERO;
     private BigDecimal otrosDesperdicios = BigDecimal.ZERO;
+    private BigDecimal valorInsumosVarios = BigDecimal.ZERO;
 
     private LocalDate fechaRegistro;
 
@@ -44,9 +45,10 @@ public class Producto {
 
     private BigDecimal porcentajeRentabilidad = BigDecimal.ZERO;
     private BigDecimal gananciaTotal = BigDecimal.ZERO;
-    private BigDecimal gananciaUnitaria = BigDecimal.ZERO;
     private BigDecimal inversionTotal = BigDecimal.ZERO;
     private BigDecimal dineroTotalRecaudado = BigDecimal.ZERO;
+    private BigDecimal gananciaUnitariaBruta = BigDecimal.ZERO;
+    private BigDecimal gananciaUnitariaNeta = BigDecimal.ZERO;
 
     private Boolean esPesable;
     private String descripcion;
@@ -70,6 +72,10 @@ public class Producto {
 
    
     private LocalDate fechaCambioPrecio;
+
+	private BigDecimal gananciaBrutaUnitaria;
+
+	private BigDecimal gananciaNetaUnitaria;
  
     // Getters y Setters
     public Long getId() {
@@ -160,14 +166,6 @@ public class Producto {
         this.gananciaTotal = gananciaTotal;
     }
 
-    public BigDecimal getGananciaUnitaria() {
-        return gananciaUnitaria;
-    }
-
-    public void setGananciaUnitaria(BigDecimal gananciaUnitaria) {
-        this.gananciaUnitaria = gananciaUnitaria;
-    }
-
     public BigDecimal getInversionTotal() {
         return inversionTotal;
     }
@@ -229,13 +227,19 @@ public class Producto {
         this.inversionTotal = this.precioCompra.multiply(BigDecimal.valueOf(this.stock));
     }
 
-    public void calcularGananciaUnitaria() {
-        this.gananciaUnitaria = this.precioVenta.subtract(this.precioCompra);
+    public void calcularGananciaUnitaria(BigDecimal costoInsumosPorKilo) {
+        // Calcular la ganancia unitaria bruta
+        this.gananciaBrutaUnitaria = this.precioVenta.subtract(this.precioCompra);
+
+        // Calcular la ganancia unitaria neta descontando los insumos
+        this.gananciaNetaUnitaria = this.gananciaBrutaUnitaria.subtract(costoInsumosPorKilo);
     }
 
     public void calcularGananciaTotal() {
-        this.gananciaTotal = this.gananciaUnitaria.multiply(BigDecimal.valueOf(this.stock));
+        // Calcular la ganancia total usando la ganancia neta unitaria y el stock actual
+        this.gananciaTotal = this.gananciaNetaUnitaria.multiply(BigDecimal.valueOf(this.stock));
     }
+
 
     public void calcularDineroTotalRecaudado() {
         this.dineroTotalRecaudado = this.precioVenta.multiply(BigDecimal.valueOf(this.stock));
@@ -275,10 +279,10 @@ public class Producto {
 	}
 
 	 // Método que actualiza el precio de compra
-    public void actualizarPrecioCompra(BigDecimal nuevoPrecio) {
-        this.precioCompraAnterior = this.precioCompra; // Guarda el precio actual antes de la actualización
-        this.precioCompra = nuevoPrecio; // Actualiza al nuevo precio
-    }
+	public void actualizarPrecioCompra(BigDecimal nuevoPrecio) {
+	    this.precioCompraAnterior = this.precioCompra; // Guarda el precio actual antes de la actualización
+	    this.precioCompra = nuevoPrecio; // Actualiza al nuevo precio
+	}
     
     public void actualizarPrecioCompraActual(BigDecimal nuevoPrecio) {
         this.precioCompraActual = nuevoPrecio;
@@ -298,6 +302,30 @@ public class Producto {
 
 	public void setInsumosVarios(BigDecimal insumosVarios) {
 		this.insumosVarios = insumosVarios;
+	}
+
+	public BigDecimal getValorInsumosVarios() {
+		return valorInsumosVarios;
+	}
+
+	public void setValorInsumosVarios(BigDecimal valorInsumosVarios) {
+		this.valorInsumosVarios = valorInsumosVarios;
+	}
+
+	public BigDecimal getGananciaUnitariaBruta() {
+		return gananciaUnitariaBruta;
+	}
+
+	public void setGananciaUnitariaBruta(BigDecimal gananciaUnitariaBruta) {
+		this.gananciaUnitariaBruta = gananciaUnitariaBruta;
+	}
+
+	public BigDecimal getGananciaUnitariaNeta() {
+		return gananciaUnitariaNeta;
+	}
+
+	public void setGananciaUnitariaNeta(BigDecimal gananciaUnitariaNeta) {
+		this.gananciaUnitariaNeta = gananciaUnitariaNeta;
 	}
 
 }

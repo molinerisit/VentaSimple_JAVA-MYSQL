@@ -1,56 +1,237 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+	<meta name="_csrf" content="YOUR_CSRF_TOKEN">
+	<meta name="_csrf_header" content="YOUR_CSRF_HEADER">
+
 <head>
     <meta charset="UTF-8">
     <title>Rentabilidad por Ejercicio</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script>
-        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+		// Configuración de CSRF
+		const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+		const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        function calcularMonto(insumo) {
-            const cantidad = document.getElementById(`cantidad-${insumo.id}`).value;
-            const precio = insumo.precioCompra;
-            const total = cantidad * precio;
-            document.getElementById(`total-${insumo.id}`).innerText = total.toFixed(2);
-            return total;
-        }
+		function calcularMonto(insumoId) {
+		    const precioCompraElement = document.querySelector(`[data-insumo-id="${insumoId}"] [data-precio]`);
+		    const cantidadElement = document.getElementById(`cantidad-${insumoId}`);
+		    const totalElement = document.getElementById(`total-${insumoId}`);
 
-        function guardarBalance() {
-            const balances = [];
-            document.querySelectorAll('tbody tr').forEach(row => {
-                const idVenta = row.querySelector('td:nth-child(1)').innerText;
-                const gananciaTotal = parseFloat(row.querySelector('td:nth-child(4)').innerText);
+		    if (precioCompraElement && cantidadElement && totalElement) {
+		        const precioCompra = parseFloat(precioCompraElement.dataset.precio) || 0;
+		        const cantidad = parseFloat(cantidadElement.value) || 0;
+		        const totalConsumo = precioCompra * cantidad;
+		        totalElement.innerText = totalConsumo.toFixed(2);
+		        actualizarCostoTotalInsumos(); // Actualiza el costo total tras cada consumo
+		    }
+		}
+		
+		function actualizarStockInsumos() {
+		    const insumosConsumidos = [];
 
-                const balance = {
-                    gananciaTotal: gananciaTotal,
-                    gananciaUnitaria: ...,
-                    inversionTotal: ...,
-                    dineroTotalRecaudado: ...
-                };
+		    document.querySelectorAll('tbody tr').forEach(row => {
+		        const checkbox = row.querySelector('input[type="checkbox"]');
+		        if (checkbox && checkbox.checked) {
+		            const insumoId = checkbox.value;
+		            const cantidadElement = document.getElementById(`cantidad-${insumoId}`);
+		            const cantidad = parseFloat(cantidadElement.value) || 0;
 
-                balances.push(balance);
-            });
+		            insumosConsumidos.push({ id: insumoId, cantidad });
+		        }
+		    });
 
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `/rentabilidad-ejercicio/guardarBalance`, true);
-            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.setRequestHeader(csrfHeader, csrfToken);
+		    if (insumosConsumidos.length === 0) {
+		        alert("Selecciona al menos un insumo para actualizar el stock.");
+		        return;
+		    }
 
-            xhr.send(JSON.stringify(balances));
+		    // Realiza la petición POST para actualizar el stock
+		    fetch("/rentabilidad-ejercicio/actualizarStockInsumos", {
+		        method: "POST",
+		        headers: {
+		            "Content-Type": "application/json",
+		            [csrfHeader]: csrfToken
+		        },
+		        body: JSON.stringify(insumosConsumidos)
+		    })
+		    .then(response => {
+		        if (response.ok) {
+		            alert("El stock ha sido actualizado.");
+		            // Opcional: actualizar la vista para reflejar el nuevo stock sin recargar la página
+		        } else {
+		            alert("Error al actualizar el stock.");
+		        }
+		    })
+		    .catch(error => console.error("Error:", error));
+		}
 
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    console.log('Balances guardados correctamente.');
-                    alert('Balances guardados exitosamente!');
-                } else {
-                    console.error('Error al guardar los balances.');
-                    alert('Error al guardar los balances. Por favor, inténtalo de nuevo.');
-                }
-            };
-        }
+
+		
+		function guardarBalance() {
+		        // Toma captura del balance
+		        html2canvas(document.querySelector("#balanceContent")).then(canvas => {
+		            // Convierte la imagen en formato base64
+		            const imageData = canvas.toDataURL("image/png");
+
+		            // Envía la imagen como base64 al servidor
+		            const xhr = new XMLHttpRequest();
+		            xhr.open("POST", "/rentabilidad-ejercicio/guardarImagenBalance", true);
+		            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		            xhr.setRequestHeader("X-CSRF-Token", csrfToken);
+
+		            // Envía la imagen y otros datos si son necesarios
+		            xhr.send(JSON.stringify({ image: imageData }));
+		            
+		            xhr.onload = function () {
+		                if (xhr.status === 200) {
+		                    alert("Balance guardado exitosamente como imagen.");
+		                } else {
+		                    alert("Error al guardar el balance. Inténtalo nuevamente.");
+		                }
+		            };
+		        });
+		    }
+
+		function actualizarCostoTotalInsumos() {
+		    let costoTotalInsumos = 0;
+
+		    document.querySelectorAll('tbody tr').forEach(row => {
+		        const checkbox = row.querySelector('input[type="checkbox"]');
+		        if (checkbox && checkbox.checked) {
+		            const insumoId = checkbox.value;
+		            const cantidadElement = document.getElementById(`cantidad-${insumoId}`);
+		            const precioCompraElement = row.querySelector('[data-precio]');
+
+		            if (!cantidadElement) {
+		                console.error("No se encontró el elemento de cantidad para el insumo con ID " + insumoId);
+		                return;
+		            }
+		            if (!precioCompraElement) {
+		                console.error("No se encontró el elemento de precio para el insumo con ID " + insumoId);
+		                return;
+		            }
+
+		            const cantidad = parseFloat(cantidadElement.value) || 0;
+		            const precio = parseFloat(precioCompraElement.dataset.precio) || 0;
+		            const subtotal = cantidad * precio;
+		            costoTotalInsumos += subtotal;
+
+		            console.log(`Incluyendo insumo ${insumoId}: Cantidad - ${cantidad}, Precio - ${precio}, Subtotal - ${subtotal.toFixed(2)}`);
+		        }
+		    });
+
+		    document.getElementById('costoTotalInsumos').innerText = costoTotalInsumos.toFixed(2);
+		    console.log(`Costo Total de Insumos Consumidos: ${costoTotalInsumos.toFixed(2)}`);
+		}
+
+
+		function calcularTotalInsumos() {
+		    const insumos = document.querySelectorAll('tbody tr');
+		    let totalInsumos = 0;
+
+		    insumos.forEach(insumo => {
+		        const insumoId = insumo.getAttribute('data-insumo-id');
+		        calcularMonto(insumoId);
+		        const total = parseFloat(document.getElementById(`total-${insumoId}`).innerText) || 0;
+		        totalInsumos += total;
+		    });
+
+		    document.getElementById('costoTotalInsumos').innerText = totalInsumos.toFixed(2);
+		    console.log("Costo Total de Insumos: " + totalInsumos.toFixed(2));
+		}
+
+
+		function calcularTotalInsumos() {
+		    const insumos = document.querySelectorAll('.insumo');
+		    let totalInsumos = 0;
+
+		    insumos.forEach(insumo => {
+		        const insumoId = insumo.dataset.insumoId;
+		        calcularMonto(insumoId);
+		        const total = parseFloat(document.getElementById(`total-${insumoId}`).innerText) || 0;
+		        totalInsumos += total;
+		    });
+
+		    document.getElementById('costoTotalInsumos').innerText = totalInsumos.toFixed(2);
+		    console.log("Costo Total de Insumos: " + totalInsumos.toFixed(2));
+		}
+
+
+		// Calcula el total de insumos al llamar a calcularMonto para cada uno y luego actualizar el costo total
+		function calcularTotalInsumos() {
+		    const insumos = document.querySelectorAll('.insumo');
+		    let totalInsumos = 0;
+
+		    insumos.forEach(insumo => {
+		        const insumoId = insumo.dataset.insumoId;
+		        calcularMonto(insumoId);
+		        const total = parseFloat(document.getElementById(`total-${insumoId}`).innerText) || 0;
+		        totalInsumos += total;
+
+		        console.log(`Total acumulado después de agregar insumo ${insumoId}: ${totalInsumos}`);
+		    });
+
+		    document.getElementById('costoTotalInsumos').innerText = totalInsumos.toFixed(2);
+		    console.log(`Costo Total de Insumos: ${totalInsumos.toFixed(2)}`);
+		}
+
+		// Valida que la cantidad no sea negativa
+		function validarCantidad(input) {
+		    if (input.value < 0) {
+		        alert("La cantidad no puede ser negativa.");
+		        input.value = 0;
+		        console.log("Cantidad negativa ajustada a 0");
+		    }
+		}
+
+		// Guarda el balance enviando los datos al servidor
+		function guardarBalance() {
+		    const balances = [];
+		    let totalDineroRecaudado = 0;
+
+		    document.querySelectorAll('tbody tr').forEach(row => {
+		        const idVenta = row.querySelector('td:nth-child(1)').innerText;
+		        const gananciaTotal = parseFloat(row.querySelector('td:nth-child(4)').innerText) || 0;
+		        totalDineroRecaudado += parseFloat(row.querySelector('td:nth-child(7)').innerText) || 0;
+
+		        const balance = {
+		            idVenta: idVenta,
+		            gananciaTotal: gananciaTotal,
+		            gananciaUnitaria: gananciaTotal / (parseFloat(row.querySelector('td:nth-child(5)').innerText) || 1),
+		            inversionTotal: 0,
+		            dineroTotalRecaudado: totalDineroRecaudado
+		        };
+
+		        balances.push(balance);
+		        console.log(`Balance agregado para venta ${idVenta}:`, balance);
+		    });
+
+		    const costoTotalInsumos = parseFloat(document.getElementById('costoTotalInsumos').innerText) || 0;
+		    balances.forEach(balance => {
+		        balance.inversionTotal += costoTotalInsumos;
+		    });
+
+		    const xhr = new XMLHttpRequest();
+		    xhr.open("POST", `/rentabilidad-ejercicio/guardarBalance`, true);
+		    xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+		    xhr.setRequestHeader(csrfHeader, csrfToken);
+
+		    xhr.send(JSON.stringify(balances));
+
+		    xhr.onload = function () {
+		        if (xhr.status === 200) {
+		            console.log('Balances guardados correctamente.');
+		            alert('Balances guardados exitosamente!');
+		        } else {
+		            console.error('Error al guardar los balances.');
+		            alert('Error al guardar los balances. Por favor, inténtalo de nuevo.');
+		        }
+		    };
+		}
+
     </script>
 </head>
+
 <body class="bg-gray-100 p-4">
     <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <h1 class="text-3xl font-bold mb-6">Rentabilidad por Ejercicio</h1>
@@ -60,11 +241,11 @@
             <div class="flex flex-wrap space-x-4 items-end">
                 <div class="flex flex-col">
                     <label for="fechaInicio" class="text-sm font-medium text-gray-700 mb-1">Fecha Inicio:</label>
-                    <input type="date" id="fechaInicio" name="fechaInicio" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm">
+                    <input type="date" id="fechaInicio" name="fechaInicio" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300">
                 </div>
                 <div class="flex flex-col">
                     <label for="fechaFin" class="text-sm font-medium text-gray-700 mb-1">Fecha Fin:</label>
-                    <input type="date" id="fechaFin" name="fechaFin" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm">
+                    <input type="date" id="fechaFin" name="fechaFin" class="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300">
                 </div>
                 <div>
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-6">Filtrar</button>
@@ -73,53 +254,97 @@
         </form>
 
         <!-- Tabla de resultados -->
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Venta</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Venta</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ganancia Total</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200" th:each="rentabilidad : ${rentabilidadPorVenta}">
-                <tr>
-                    <td class="px-6 py-4" th:text="${rentabilidad.idVenta}"></td>
-                    <td class="px-6 py-4" th:text="${rentabilidad.totalVenta}"></td>
-                    <td class="px-6 py-4" th:text="${rentabilidad.gananciaTotal}"></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Tabla de Insumos -->
-        <h2 class="text-2xl font-bold mt-8 mb-4">Seleccionar Insumos</h2>
         <table class="min-w-full divide-y divide-gray-200 mb-6">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seleccionar</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre Insumo</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Compra</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Venta</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método de Pago</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detalles de Productos</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descuento</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recargo</th>
+                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200" th:each="insumo : ${insumos}">
+            <tbody class="bg-white divide-y divide-gray-200" th:each="venta : ${rentabilidadPorVenta}">
                 <tr>
-                    <td class="px-6 py-4">
-                        <input type="checkbox" id="insumo-${insumo.id}" onchange="calcularMonto(${insumo})">
+                    <td class="px-4 py-4" th:text="${venta.idVenta}"></td>
+                    <td class="px-4 py-4" th:text="${#temporals.format(venta.fechaHora, 'yyyy-MM-dd')}"></td>
+                    <td class="px-4 py-4" th:text="${venta.metodoPago}"></td>
+                    <td class="px-4 py-4">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Venta Unitario</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Compra Unitario</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ganancia</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="detalle : ${venta.detallesVenta}">
+                                    <td class="px-2 py-4" th:text="${detalle.producto.nombre}"></td>
+                                    <td class="px-2 py-4" th:text="${detalle.cantidad}"></td>
+                                    <td class="px-2 py-4" th:text="${detalle.precioUnitario}"></td>
+                                    <td class="px-2 py-4" th:text="${detalle.producto.precioCompra}"></td>
+                                    <td class="px-2 py-4" th:text="${detalle.subtotal}"></td>
+                                    <td class="px-2 py-4" th:text="${detalle.ganancia}"></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </td>
-                    <td class="px-6 py-4" th:text="${insumo.nombre}"></td>
-                    <td class="px-6 py-4" th:text="${insumo.precioCompra}"></td>
-                    <td class="px-6 py-4">
-                        <input type="number" id="cantidad-${insumo.id}" class="border rounded px-2 py-1" onchange="calcularMonto(${insumo})" min="0" value="0">
-                    </td>
-                    <td class="px-6 py-4" id="total-${insumo.id}">0.00</td>
+                    <td class="px-4 py-4" th:text="${venta.subtotal}"></td>
+                    <td class="px-4 py-4" th:text="${venta.descuento}"></td>
+                    <td class="px-4 py-4" th:text="${venta.recargo}"></td>
+                    <td class="px-4 py-4" th:text="${venta.totalVenta}"></td>
                 </tr>
             </tbody>
         </table>
 
-        <div class="mt-4">
-            <button type="button" onclick="guardarBalance()" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded">Guardar Todo el Balance</button>
-        </div>
+		<!-- Tabla de insumos -->
+		<h2 class="text-2xl font-bold mb-4">Insumos</h2>
+		<table class="min-w-full divide-y divide-gray-200 mb-6">
+		    <thead class="bg-gray-50">
+		        <tr>
+		            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Seleccionar</th>
+		            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Insumo</th>
+					<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Disponible</th>
+		            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio Unitario</th>
+		            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cantidad</th>
+		            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Costo insumo consumido</th>
+		        </tr>
+		    </thead>
+			<!-- Tabla de insumos -->
+			<tbody>
+			    <tr th:each="insumo : ${insumos}" class="insumo" th:data-insumo-id="${insumo.id}">
+			        <td class="px-4 py-4">
+			            <input type="checkbox" th:value="${insumo.id}" onclick="actualizarCostoTotalInsumos()">
+			        </td>
+			        <td class="px-4 py-4" th:text="${insumo.nombre}"></td>
+					<td class="px-4 py-4" th:text="${insumo.stock}"></td>
+
+			        <td class="px-4 py-4" th:data-precio="${insumo.precioCompra}" th:text="${insumo.precioCompra}"></td>
+			        <td class="px-4 py-4">
+			            <input type="number" th:id="'cantidad-' + ${insumo.id}" class="border border-gray-300 rounded-md w-full" 
+			                   placeholder="Cantidad" onchange="calcularMonto(/*[[${insumo.id}]]*/); actualizarCostoTotalInsumos()" min="0">
+			        </td>
+			        <td class="px-4 py-4" th:id="'total-' + ${insumo.id}">0.00</td>
+			    </tr>
+			</tbody>
+
+		</table>
+
+		<h3 class="text-lg font-bold mb-2">Costo Total de Insumos: $<span id="costoTotalInsumos">0.00</span></h3>
+		<button onclick="calcularTotalInsumos(); actualizarStockInsumos();" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+		    Actualizar Total Insumos
+		</button>
+
+        <!-- Botón para guardar balances -->
+        <button onclick="guardarBalance()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mt-4">Guardar Balance</button>
     </div>
 </body>
+
 </html>

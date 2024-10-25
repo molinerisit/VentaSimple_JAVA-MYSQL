@@ -7,129 +7,142 @@
     <!-- Prueba CSRF -->
     <meta name="_csrf" content="dummyToken"/>
     <meta name="_csrf_header" content="X-CSRF-TOKEN"/>
-    <script>
-        function calcularGanancia(idProducto) {
-            console.log(`Calculando ganancias para el producto ID: ${idProducto}`); // Log para depuración
+	<script>
+	    // Función para calcular ganancias
+	    function calcularGanancia(idProducto) {
+	        console.log(`Calculando ganancias para el producto ID: ${idProducto}`);
 
-            // Obtener los elementos del DOM
-            const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
-            const precioCompraText = document.getElementById(`precioCompra-${idProducto}`);
-            const cantidadLoteText = document.getElementById(`cantidadLote-${idProducto}`);
-            const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
-            const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
-            const precioVentaText = document.getElementById(`precioVenta-${idProducto}`);
-            const gananciaUnitariaText = document.getElementById(`gananciaUnitaria-${idProducto}`);
-            const gananciaTotalText = document.getElementById(`gananciaTotal-${idProducto}`);
-            const inversionTotalText = document.getElementById(`inversionTotal-${idProducto}`);
-            const dineroTotalRecaudadoText = document.getElementById(`dineroTotalRecaudado-${idProducto}`);
+	        const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
+			const precioCompraText = document.getElementById(`precioCompra-${idProducto}`);
+	        const cantidadLoteText = document.getElementById(`cantidadLote-${idProducto}`);
+	        const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
+	        const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
+	        const insumosVariosInput = document.getElementById(`insumosVarios-${idProducto}`);
+	        const valorInsumosVariosInput = document.getElementById(`valorInsumosVarios-${idProducto}`);
+	        const precioVentaText = document.getElementById(`precioVenta-${idProducto}`);
+	        
+	        const gananciaUnitariaBrutaText = document.getElementById(`gananciaUnitariaBruta-${idProducto}`);
+	        const gananciaUnitariaNetaText = document.getElementById(`gananciaUnitariaNeta-${idProducto}`);
+	        const gananciaTotalText = document.getElementById(`gananciaTotal-${idProducto}`);
+	        const inversionTotalText = document.getElementById(`inversionTotal-${idProducto}`);
+	        const dineroTotalRecaudadoText = document.getElementById(`dineroTotalRecaudado-${idProducto}`);
 
-            // Verificar que todos los elementos existen
-            if (rentabilidadInput && precioCompraText && cantidadLoteText && grasaDesperdicioInput && otrosDesperdiciosInput && precioVentaText && gananciaUnitariaText && gananciaTotalText && inversionTotalText && dineroTotalRecaudadoText) {
-                // Obtener valores y convertir a números
-                const porcentajeRentabilidad = parseFloat(rentabilidadInput.value) || 0;
-                const precioCompra = parseFloat(precioCompraText.textContent) || 0;
-                const cantidadLote = parseFloat(cantidadLoteText.textContent) || 0;
-                const grasaDesperdicio = parseFloat(grasaDesperdicioInput.value) || 0;
-                const otrosDesperdicios = parseFloat(otrosDesperdiciosInput.value) || 0;
+	        if (rentabilidadInput && precioCompraText && cantidadLoteText && grasaDesperdicioInput && otrosDesperdiciosInput && insumosVariosInput && valorInsumosVariosInput && precioVentaText && gananciaUnitariaBrutaText && gananciaUnitariaNetaText && gananciaTotalText && inversionTotalText && dineroTotalRecaudadoText) {
+	            const porcentajeRentabilidad = parseFloat(rentabilidadInput.value) || 0;
+	            const precioCompra = parseFloat(precioCompraText.textContent) || 0;
+	            const cantidadLote = parseFloat(cantidadLoteText.textContent) || 0;
+	            const grasaDesperdicio = parseFloat(grasaDesperdicioInput.value) || 0;
+	            const otrosDesperdicios = parseFloat(otrosDesperdiciosInput.value) || 0;
+	            const insumosVarios = parseFloat(insumosVariosInput.value) || 0;
+	            const valorInsumosVarios = parseFloat(valorInsumosVariosInput.value) || 0;
 
-                // Calcular precio de venta
-                const precioVenta = precioCompra * (1 + porcentajeRentabilidad / 100);
-                precioVentaText.textContent = precioVenta.toFixed(2);
+	            const precioVenta = precioCompra * (1 + porcentajeRentabilidad / 100);
+	            precioVentaText.textContent = precioVenta.toFixed(2);
 
-                // Calcular kilos utilizables
-                const kilosUtilizables = Math.max(0, cantidadLote - grasaDesperdicio - otrosDesperdicios);
+	            const kilosUtilizables = Math.max(0, cantidadLote - grasaDesperdicio - otrosDesperdicios);
 
-                // Calcular precio de compra ajustado
-                const precioCompraAjustado = precioCompra * (cantidadLote / kilosUtilizables);
+	            const gananciaUnitariaBruta = kilosUtilizables > 0 ? (precioVenta - precioCompra) : 0;
+	            const costoInsumosPorKilo = kilosUtilizables > 0 ? (insumosVarios * valorInsumosVarios) / kilosUtilizables : 0;
+	            const gananciaUnitariaNeta = gananciaUnitariaBruta - costoInsumosPorKilo;
 
-                // Calcular ganancia unitaria y total
-                const gananciaUnitaria = kilosUtilizables > 0 ? (precioVenta - precioCompraAjustado) : 0;
-                const gananciaTotal = kilosUtilizables * gananciaUnitaria;
+	            let gananciaTotal = kilosUtilizables * gananciaUnitariaNeta;
 
-                // Calcular inversión total
-                const inversionTotal = precioCompra * cantidadLote;
+	            const inversionTotal = precioCompra * cantidadLote;
+	            gananciaTotal -= (insumosVarios * valorInsumosVarios);
 
-                // Calcular dinero total recaudado
-                const dineroTotalRecaudado = kilosUtilizables * precioVenta;
+	            const dineroTotalRecaudado = kilosUtilizables * precioVenta;
 
-                // Mostrar resultados en el DOM
-                gananciaUnitariaText.textContent = gananciaUnitaria.toFixed(2);
-                gananciaTotalText.textContent = gananciaTotal.toFixed(2);
-                inversionTotalText.textContent = inversionTotal.toFixed(2);
-                dineroTotalRecaudadoText.textContent = dineroTotalRecaudado.toFixed(2);
+	            gananciaUnitariaBrutaText.textContent = gananciaUnitariaBruta.toFixed(2);
+	            gananciaUnitariaNetaText.textContent = gananciaUnitariaNeta.toFixed(2);
+	            gananciaTotalText.textContent = gananciaTotal.toFixed(2);
+	            inversionTotalText.textContent = inversionTotal.toFixed(2);
+	            dineroTotalRecaudadoText.textContent = dineroTotalRecaudado.toFixed(2);
+	        } else {
+	            console.error('Faltan algunos elementos necesarios para calcular la ganancia.');
+	        }
+	    }
 
-                // Enviar datos al servidor para actualizar la base de datos
-                actualizarBaseDeDatos(idProducto, precioVenta, gananciaTotal, porcentajeRentabilidad, gananciaUnitaria, inversionTotal, dineroTotalRecaudado, grasaDesperdicio, otrosDesperdicios);
-            } else {
-                console.error('Faltan algunos elementos necesarios para calcular la ganancia.');
-            }
-        }
+	    // Función para guardar los datos calculados en la base de datos
+	    function guardarGanancia(idProducto) {
+	        const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
+	        const precioCompraText = document.getElementById(`precioCompra-${idProducto}`);
+	        const cantidadLoteText = document.getElementById(`cantidadLote-${idProducto}`);
+	        const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
+	        const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
+	        const insumosVariosInput = document.getElementById(`insumosVarios-${idProducto}`);
+	        const valorInsumosVariosInput = document.getElementById(`valorInsumosVarios-${idProducto}`);
+	        const precioVentaText = document.getElementById(`precioVenta-${idProducto}`);
+	        const gananciaUnitariaBrutaText = document.getElementById(`gananciaUnitariaBruta-${idProducto}`);
+	        const gananciaUnitariaNetaText = document.getElementById(`gananciaUnitariaNeta-${idProducto}`);
+	        const gananciaTotalText = document.getElementById(`gananciaTotal-${idProducto}`);
+	        const inversionTotalText = document.getElementById(`inversionTotal-${idProducto}`);
+	        const dineroTotalRecaudadoText = document.getElementById(`dineroTotalRecaudado-${idProducto}`);
 
-        // Obtener los valores de las metas para CSRF
-        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+	        const datos = {
+	            porcentajeRentabilidad: parseFloat(rentabilidadInput.value) || 0,
+	            precioVenta: parseFloat(precioVentaText.textContent) || 0,
+	            gananciaTotal: parseFloat(gananciaTotalText.textContent) || 0,
+	            gananciaBrutaUnitaria: parseFloat(gananciaUnitariaBrutaText.textContent) || 0,
+	            gananciaNetaUnitaria: parseFloat(gananciaUnitariaNetaText.textContent) || 0,
+	            inversionTotal: parseFloat(inversionTotalText.textContent) || 0,
+	            dineroTotalRecaudado: parseFloat(dineroTotalRecaudadoText.textContent) || 0,
+	            grasaDesperdicio: parseFloat(grasaDesperdicioInput.value) || 0,
+	            otrosDesperdicios: parseFloat(otrosDesperdiciosInput.value) || 0,
+	            insumosVarios: parseFloat(insumosVariosInput.value) || 0,
+	            valorInsumosVarios: parseFloat(valorInsumosVariosInput.value) || 0
+	        };
 
-        function actualizarBaseDeDatos(idProducto, precioVenta, gananciaTotal, porcentajeRentabilidad, gananciaUnitaria, inversionTotal, dineroTotalRecaudado, grasaDesperdicio, otrosDesperdicios) {
-            const xhr = new XMLHttpRequest();
-            xhr.open("POST", `/productos/${idProducto}/actualizarRentabilidadDatos`, true);
-            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xhr.setRequestHeader(csrfHeader, csrfToken);
+	        actualizarBaseDeDatos(idProducto, datos);
+	    }
 
-            const data = JSON.stringify({
-                porcentajeRentabilidad: porcentajeRentabilidad,
-                precioVenta: precioVenta,
-                gananciaTotal: gananciaTotal,
-                gananciaUnitaria: gananciaUnitaria,
-                inversionTotal: inversionTotal,
-                dineroTotalRecaudado: dineroTotalRecaudado,
-                grasaDesperdicio: grasaDesperdicio,
-                otrosDesperdicios: otrosDesperdicios
-            });
+	    // Función que actualiza los datos en la base de datos
+	    function actualizarBaseDeDatos(idProducto, datos) {
+	        const xhr = new XMLHttpRequest();
+	        xhr.open("POST", `/productos/${idProducto}/actualizarRentabilidadDatos`, true);
+	        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+	        xhr.setRequestHeader(csrfHeader, csrfToken);
 
-            xhr.send(data);
+	        xhr.send(JSON.stringify(datos));
 
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    console.log('Datos actualizados correctamente.');
-                } else {
-                    console.error('Error al actualizar los datos.');
-                }
-            };
-        }
+	        xhr.onload = function() {
+	            if (xhr.status === 200) {
+	                console.log('Datos actualizados correctamente.');
+	            } else {
+	                console.error('Error al actualizar los datos.');
+	            }
+	        };
+	    }
 
-        function agregarEventos(idProducto) {
-            const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
-            const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
-            const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
+	    // Obtener los valores de las metas para CSRF
+	    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+	    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-            if (rentabilidadInput) {
-                rentabilidadInput.addEventListener('input', () => calcularGanancia(idProducto));
-            } else {
-                console.error(`Elemento rentabilidad-${idProducto} no encontrado`);
-            }
+	    // Función para agregar eventos de cambio a los inputs
+	    function agregarEventos(idProducto) {
+	        const rentabilidadInput = document.getElementById(`rentabilidad-${idProducto}`);
+	        const grasaDesperdicioInput = document.getElementById(`grasaDesperdicio-${idProducto}`);
+	        const otrosDesperdiciosInput = document.getElementById(`otrosDesperdicios-${idProducto}`);
+	        const insumosVariosInput = document.getElementById(`insumosVarios-${idProducto}`);
+	        const valorInsumosVariosInput = document.getElementById(`valorInsumosVarios-${idProducto}`);
 
-            if (grasaDesperdicioInput) {
-                grasaDesperdicioInput.addEventListener('input', () => calcularGanancia(idProducto));
-            } else {
-                console.error(`Elemento grasaDesperdicio-${idProducto} no encontrado`);
-            }
+	        if (rentabilidadInput) rentabilidadInput.addEventListener('input', () => calcularGanancia(idProducto));
+	        if (grasaDesperdicioInput) grasaDesperdicioInput.addEventListener('input', () => calcularGanancia(idProducto));
+	        if (otrosDesperdiciosInput) otrosDesperdiciosInput.addEventListener('input', () => calcularGanancia(idProducto));
+	        if (insumosVariosInput) insumosVariosInput.addEventListener('input', () => calcularGanancia(idProducto));
+	        if (valorInsumosVariosInput) valorInsumosVariosInput.addEventListener('input', () => calcularGanancia(idProducto));
+	    }
 
-            if (otrosDesperdiciosInput) {
-                otrosDesperdiciosInput.addEventListener('input', () => calcularGanancia(idProducto));
-            } else {
-                console.error(`Elemento otrosDesperdicios-${idProducto} no encontrado`);
-            }
-        }
+	    // Ejecutar cuando la página se haya cargado
+	    window.onload = function() {
+	        const productos = document.querySelectorAll('tr[data-id]');
+	        productos.forEach(producto => {
+	            const idProducto = producto.getAttribute('data-id');
+	            agregarEventos(idProducto); // Agregar eventos de cambio
+	        });
+	    }
+	</script>
 
-        // Calcular ganancias automáticamente al cargar la página
-        window.onload = function() {
-            const productos = document.querySelectorAll('tr[data-id]');
-            productos.forEach(producto => {
-                const idProducto = producto.getAttribute('data-id');
-                agregarEventos(idProducto); // Agregar eventos de cambio
-            });
-        }
-    </script>
+
 </head>
 <body class="bg-gray-100 text-gray-800 antialiased font-sans p-6">
     <div class="max-w-8xl mx-auto">
@@ -149,7 +162,10 @@
                         <th class="py-2 px-4 text-left">Cantidad (kg/u)</th>
                         <th class="py-2 px-4 text-left">Grasa Desperdicio (kg)</th>
                         <th class="py-2 px-4 text-left">Otros Desperdicios (kg)</th>
-                        <th class="py-2 px-4 text-left">Ganancia Unitaria</th>
+						<th class="py-2 px-4 text-left">Insumos Varios (kg)</th>
+					    <th class="py-2 px-4 text-left">Valor Insumos Varios ($)</th>
+						<th class="py-2 px-4 text-left">Ganancia Unitaria Bruta</th>
+						       <th class="py-2 px-4 text-left">Ganancia Unitaria Neta</th>
                         <th class="py-2 px-4 text-left">Ganancia Total</th>
                         <th class="py-2 px-4 text-left">Inversión Total</th>
                         <th class="py-2 px-4 text-left">Dinero Total Recaudado</th>
@@ -173,13 +189,22 @@
                         <td class="py-2 px-4">
                             <input type="number" th:id="'otrosDesperdicios-' + ${producto.id}"  th:value="${producto.otrosDesperdicios}" data-id="${producto.id}" class="border border-gray-300 rounded-md p-1 w-full" />
                         </td>
-                        <td th:id="'gananciaUnitaria-' + ${producto.id}" th:text="${producto.gananciaUnitaria}" class="py-2 px-4">0.00</td>
-                        <td th:id="'gananciaTotal-' + ${producto.id}" th:text="${producto.gananciaTotal}" class="py-2 px-4">0.00</td>
+						<td class="py-2 px-4">
+						            <input type="number" th:id="'insumosVarios-' + ${producto.id}" class="border border-gray-300 rounded-md p-1 w-full" />
+						        </td>
+						        <td class="py-2 px-4">
+						            <input type="number" th:id="'valorInsumosVarios-' + ${producto.id}" class="border border-gray-300 rounded-md p-1 w-full" />
+						        </td>
+								<td th:id="'gananciaUnitariaBruta-' + ${producto.id}" th:text="${producto.gananciaUnitariaBruta}" class="py-2 px-4">0.00</td>
+							    <td th:id="'gananciaUnitariaNeta-' + ${producto.id}" th:text="${producto.gananciaUnitariaNeta}" class="py-2 px-4">0.00</td>
+							    <td th:id="'gananciaTotal-' + ${producto.id}" th:text="${producto.gananciaTotal}" class="py-2 px-4">0.00</td>
                         <td th:id="'inversionTotal-' + ${producto.id}" th:text="${producto.inversionTotal}" class="py-2 px-4">0.00</td>
                         <td th:id="'dineroTotalRecaudado-' + ${producto.id}" th:text="${producto.dineroTotalRecaudado}" class="py-2 px-4">0.00</td>
-                        <td class="py-2 px-4">
-                            <button type="button" th:onclick="'calcularGanancia(' + ${producto.id} + ')'" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded">Calcular</button>
-                        </td>
+						<td class="py-2 px-4">
+						    <button type="button" th:onclick="'calcularGanancia(' + ${producto.id} + ')'" class="mb-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded">Calcular</button>
+						    <button type="button" th:onclick="'guardarGanancia(' + ${producto.id} + ')'" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded">Guardar</button>
+						</td>
+
                     </tr>
                 </tbody>
             </table>

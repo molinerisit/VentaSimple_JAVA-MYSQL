@@ -1,5 +1,6 @@
 package com.gestionsimple.sistema_ventas.model;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import jakarta.persistence.Entity;
@@ -28,6 +29,7 @@ public class DetalleVenta {
     private double precio;
     private double subtotal;
     private LocalDate fecha; // Campo adicional para fecha
+    private BigDecimal ganancia;
 
     // Campos adicionales para nombre del producto y precio unitario
     private String nombreProducto;
@@ -109,4 +111,12 @@ public class DetalleVenta {
     public void setPrecioUnitario(double precioUnitario) {
         this.precioUnitario = precioUnitario;
     }
+
+	public BigDecimal getGanancia() {
+		return ganancia;
+	}
+
+	public void setGanancia(BigDecimal ganancia) {
+		this.ganancia = ganancia;
+	}
 }

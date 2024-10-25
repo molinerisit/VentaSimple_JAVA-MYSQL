@@ -60,6 +60,7 @@ public class ProductoController {
         this.categoriaService = categoriaService;
         this.scannerConfigService = scannerConfigService;  // Inyección del servicio
     }
+    
  // Mostrar todos los productos
     @GetMapping
     public String mostrarProductos(Model model) {
@@ -69,12 +70,14 @@ public class ProductoController {
         boolean alertaAgotado = false;
 
         for (Producto producto : productos) {
+            // Alertas de stock bajo o agotado
             if (producto.getStock() <= 1) {
                 alertaAgotado = true;
             } else if (producto.getStock() <= 3) {
                 alertaBajoStock = true;
             }
 
+            // Calcular rentabilidad si el precio de compra es válido
             if (producto.getPrecioCompra() != null && producto.getPrecioCompra().compareTo(BigDecimal.ZERO) > 0) {
                 BigDecimal diferencia = producto.getPrecioVenta().subtract(producto.getPrecioCompra());
                 BigDecimal porcentajeRentabilidad = diferencia
@@ -84,7 +87,8 @@ public class ProductoController {
                 producto.setPorcentajeRentabilidad(porcentajeRentabilidad);
             }
 
-            producto.calcularGananciaUnitaria();
+            // Pasar el precio de venta como argumento a calcularGananciaUnitaria
+            producto.calcularGananciaUnitaria(producto.getPrecioVenta());
             producto.calcularGananciaTotal();
             producto.calcularDineroTotalRecaudado();
         }
@@ -94,6 +98,7 @@ public class ProductoController {
         model.addAttribute("alertaAgotado", alertaAgotado);
         return "productos";
     }
+
 
     // Mostrar formulario de creación de producto
     @GetMapping("/crear")
