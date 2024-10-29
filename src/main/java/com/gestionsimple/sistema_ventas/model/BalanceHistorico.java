@@ -17,12 +17,14 @@ public class BalanceHistorico {
     private BigDecimal gananciaTotal;
     private BigDecimal gananciaUnitaria;
     private LocalDateTime fechaBalance;
+    private BigDecimal costoTotalInsumosConsumidos; // Nuevo campo para el costo total de insumos consumidos
+    private BigDecimal balanceNeto; // Nuevo campo para el balance neto
+    private BigDecimal inversionTotal; // Campo para inversión total
 
-    // Relación con ventas (ahora usando la entidad Venta en lugar del DTO)
     @OneToMany
     private List<Venta> ventas;
 
-	private BigDecimal dineroTotalRecaudado;
+    private BigDecimal dineroTotalRecaudado;
 
     public Long getId() {
         return id;
@@ -40,8 +42,6 @@ public class BalanceHistorico {
         this.fechaBalance = fechaBalance;
     }
 
-    
-
     public List<Venta> getVentas() {
         return ventas;
     }
@@ -58,9 +58,6 @@ public class BalanceHistorico {
         this.gananciaTotal = gananciaTotal;
     }
 
-    public void setInversionTotal(BigDecimal inversionTotal) {
-    }
-
     public BigDecimal getDineroTotalRecaudado() {
         return dineroTotalRecaudado;
     }
@@ -75,5 +72,29 @@ public class BalanceHistorico {
 
     public void setGananciaUnitaria(BigDecimal gananciaUnitaria) {
         this.gananciaUnitaria = gananciaUnitaria;
+    }
+
+    public BigDecimal getCostoTotalInsumosConsumidos() {
+        return costoTotalInsumosConsumidos;
+    }
+
+    public void setCostoTotalInsumosConsumidos(BigDecimal costoTotalInsumosConsumidos) {
+        this.costoTotalInsumosConsumidos = costoTotalInsumosConsumidos;
+    }
+
+    public BigDecimal getBalanceNeto() {
+        return balanceNeto;
+    }
+
+    public void setBalanceNeto(BigDecimal balanceNeto) {
+        this.balanceNeto = balanceNeto;
+    }
+
+    public BigDecimal getInversionTotal() {
+        return inversionTotal;
+    }
+
+    public void setInversionTotal(BigDecimal inversionTotal) {
+        this.inversionTotal = inversionTotal;
     }
 }

@@ -1,26 +1,37 @@
 package com.gestionsimple.sistema_ventas.service;
 
+import com.gestionsimple.sistema_ventas.model.Balance;
+import com.gestionsimple.sistema_ventas.repository.BalanceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.gestionsimple.sistema_ventas.model.Balance;
-import com.gestionsimple.sistema_ventas.repository.BalanceRepository;
-
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class BalanceService {
 
-    @Autowired
-    private BalanceRepository balanceRepository;
+    private final BalanceRepository balanceRepository;
 
-    public Balance guardarBalance(String imagen, Double totalDineroRecaudado) {
+    @Autowired
+    public BalanceService(BalanceRepository balanceRepository) {
+        this.balanceRepository = balanceRepository;
+    }
+
+    public Balance guardarBalance(double gananciaTotal, double inversionTotal, double dineroTotalRecaudado, double gastoInsumos, double balanceNeto) {
         Balance balance = new Balance();
-        balance.setImagen(imagen);
-        balance.setFechaCreacion(LocalDateTime.now());
-        balance.setTotalDineroRecaudado(totalDineroRecaudado);
+        balance.setGananciaTotal(gananciaTotal);
+        balance.setInversionTotal(inversionTotal);
+        balance.setDineroTotalRecaudado(dineroTotalRecaudado);
+        balance.setGastoInsumos(gastoInsumos);
+        balance.setBalanceNeto(balanceNeto);
 
         return balanceRepository.save(balance);
     }
+
+
+public List<Balance> obtenerTodosBalances() {
+    return balanceRepository.findAll();
+}
 
 }

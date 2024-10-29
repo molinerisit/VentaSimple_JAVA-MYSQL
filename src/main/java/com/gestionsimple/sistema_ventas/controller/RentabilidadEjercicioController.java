@@ -76,7 +76,9 @@ public class RentabilidadEjercicioController {
 
         // Obtiene la rentabilidad y detalles de las ventas
         List<RentabilidadEjercicioDTO> rentabilidadPorVenta = calcularRentabilidadConDetalles(ventas);
+        BigDecimal gananciaTotalPeriodo = calcularGananciaTotalPeriodo(rentabilidadPorVenta); // Calcular la ganancia total del período
         model.addAttribute("rentabilidadPorVenta", rentabilidadPorVenta);
+        model.addAttribute("gananciaTotalPeriodo", gananciaTotalPeriodo); // Agregar al modelo
 
         // Obtener todos los insumos y agregarlos al modelo
         List<Insumo> insumos = insumoService.obtenerTodosLosInsumos();
@@ -84,6 +86,16 @@ public class RentabilidadEjercicioController {
 
         return "rentabilidad_ejercicio";
     }
+
+    // Método para calcular la ganancia total del período
+    private BigDecimal calcularGananciaTotalPeriodo(List<RentabilidadEjercicioDTO> rentabilidadPorVenta) {
+        BigDecimal gananciaTotal = BigDecimal.ZERO;
+        for (RentabilidadEjercicioDTO rentabilidad : rentabilidadPorVenta) {
+            gananciaTotal = gananciaTotal.add(rentabilidad.getGananciaTotal());
+        }
+        return gananciaTotal;
+    }
+
 
     private List<RentabilidadEjercicioDTO> calcularRentabilidadConDetalles(List<Venta> ventas) {
         List<RentabilidadEjercicioDTO> rentabilidadList = new ArrayList<>();
@@ -103,18 +115,25 @@ public class RentabilidadEjercicioController {
             BigDecimal subtotal = BigDecimal.valueOf(venta.getSubtotalSinDescuentos()); // Asigna el subtotal
             BigDecimal descuento = BigDecimal.valueOf(venta.getMontoDescuento()); // Asigna el descuento
             BigDecimal recargo = BigDecimal.valueOf(venta.getRecargo()); // Asigna el recargo
+            
+            List<BigDecimal> gananciasPorProducto = new ArrayList<>(); // Inicializa la lista de ganancias por producto
 
             for (DetalleVenta detalle : detallesVenta) {
                 BigDecimal precioVenta = detalle.getProducto().getPrecioVenta();
                 BigDecimal precioCompra = detalle.getProducto().getPrecioCompra();
                 BigDecimal gananciaProducto = precioVenta.subtract(precioCompra);
                 totalGanancia = totalGanancia.add(gananciaProducto.multiply(BigDecimal.valueOf(detalle.getCantidad())));
+                
+                
+                // Agregar la ganancia del producto a la lista
+                gananciasPorProducto.add(gananciaProducto.multiply(BigDecimal.valueOf(detalle.getCantidad())));
             }
 
             rentabilidadDTO.setGananciaTotal(totalGanancia);
             rentabilidadDTO.setSubtotal(subtotal); // Asigna el subtotal calculado
             rentabilidadDTO.setDescuento(descuento); // Asigna el descuento total
             rentabilidadDTO.setRecargo(recargo); // Asigna el recargo total
+            rentabilidadDTO.setGananciasPorProducto(gananciasPorProducto); // Agregar la lista de ganancias por producto
             
             // Cálculo del total y asignación
             BigDecimal totalVenta = subtotal.subtract(descuento).add(recargo); // Aquí calculamos el total
@@ -126,43 +145,34 @@ public class RentabilidadEjercicioController {
         return rentabilidadList;
     }
 
-    @PostMapping("/guardarBalance")
-    public ResponseEntity<?> guardarBalance(@RequestBody List<BalanceDTO> balances) {
-        try {
-            for (BalanceDTO balance : balances) {
-                rentabilidadEjercicioService.guardarBalanceDesdeDTO(balance);
-            }
-            return ResponseEntity.ok().build(); // Respuesta 200 OK
-        } catch (Exception e) {
-            e.printStackTrace(); // Para ver el error en la consola
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar el balance");
-        }
-    }
+
 
     
     @PostMapping("/actualizarStockInsumos")
-    public ResponseEntity<Void> actualizarStockInsumos(@RequestBody List<InsumoDTO> insumos) {
-        for (InsumoDTO insumoDTO : insumos) {
-            // Buscar el insumo en la base de datos usando el ID
-            Insumo insumo = insumoRepository.findById(insumoDTO.getId())
-                    .orElseThrow();
+    public ResponseEntity<String> actualizarStockInsumos(@RequestBody List<InsumoDTO> insumos) {
+        System.out.println("Insumos recibidos: " + insumos); // Añade este log
 
-            // Obtener la cantidad a restar del DTO
-            BigDecimal cantidadARestar = insumoDTO.getCantidad(); // Cambia a BigDecimal
+        try {
+            for (InsumoDTO insumoDTO : insumos) {
+                Insumo insumo = insumoRepository.findById(insumoDTO.getId())
+                        .orElseThrow(() -> new RuntimeException("Insumo no encontrado: " + insumoDTO.getId()));
 
-            // Convertir el stock actual a BigDecimal para comparar
-            BigDecimal stockActual = BigDecimal.valueOf(insumo.getStock()); // Cambiar a BigDecimal
+                BigDecimal cantidadARestar = insumoDTO.getCantidad(); 
 
-            if (stockActual.compareTo(cantidadARestar) >= 0) { // Usar compareTo para BigDecimal
-                insumo.setStock(insumo.getStock() - cantidadARestar.intValue()); // Actualizar el stock, asegurando el tipo correcto
-                insumoRepository.save(insumo); // Guardar los cambios en el repositorio
-            } else {
-                // Manejar el caso donde no hay suficiente stock
-                return ResponseEntity.badRequest().build(); // O lanza una excepción personalizada
+                if (insumo.getStock() < cantidadARestar.intValue()) {
+                    return ResponseEntity.badRequest().body("No hay suficiente stock para el insumo: " + insumoDTO.getId());
+                }
+
+                insumo.setStock(insumo.getStock() - cantidadARestar.intValue());
+                insumoRepository.save(insumo);
             }
+        } catch (Exception e) {
+            e.printStackTrace(); // O usa un logger
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al actualizar el stock: " + e.getMessage());
         }
 
-        return ResponseEntity.ok().build(); // Retorna un 200 OK si todo fue exitoso
+        return ResponseEntity.ok().build();
     }
 
 

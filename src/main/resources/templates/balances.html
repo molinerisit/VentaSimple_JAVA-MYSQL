@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista de Balances</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+</head>
+<body>
+<section class="section">
+    <div class="container">
+        <h1 class="title">Balances</h1>
+
+        <!-- Formulario de filtro -->
+        <form th:action="@{/rentabilidad-ejercicio/listarBalances}" method="get" class="box">
+            <div class="field">
+                <label class="label">Ganancia Mínima</label>
+                <div class="control">
+                    <input class="input" type="number" step="0.01" name="gananciaMinima" placeholder="Ingresar ganancia mínima">
+                </div>
+            </div>
+            <div class="control">
+                <button class="button is-link" type="submit">Filtrar</button>
+            </div>
+        </form>
+
+        <!-- Tabla de balances -->
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fecha de Creación</th>
+                    <th>Inversión Total</th>
+                    <th>Dinero Total Recaudado</th>
+                    <th>Gasto Insumos</th>
+                    <th>Ganancia Total</th>
+                    <th>Balance Neto</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="balance : ${balances}">
+                    <td th:text="${balance.id}">1</td>
+					<td th:text="${#dates.format(balance.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${balance.inversionTotal}"></td>
+                    <td th:text="${balance.dineroTotalRecaudado}"></td>
+                    <td th:text="${balance.gastoInsumos}"></td>
+                    <td th:text="${balance.gananciaTotal}"></td>
+                    <td th:text="${balance.balanceNeto}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>

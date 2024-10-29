@@ -19,6 +19,7 @@ public class RentabilidadEjercicioDTO {
     private BigDecimal gananciaTotal;
     private BigDecimal recargo; // Nuevo campo
     private Double total;
+    private List<BigDecimal> gananciasPorProducto; 
 
 	public LocalDateTime getFechaHora() {
 		
@@ -37,8 +38,8 @@ public class RentabilidadEjercicioDTO {
 		return gananciaTotal;
 	}
 	public void setGananciaTotal(BigDecimal gananciaTotal) {
-		this.gananciaTotal = gananciaTotal;
-	}
+        this.gananciaTotal = gananciaTotal;
+    }
 	public BigDecimal getTotalVenta() {
 		return totalVenta;
 	}
@@ -80,6 +81,12 @@ public class RentabilidadEjercicioDTO {
 	}
 	public void setTotal(Double total) {
 		this.total = total;
+	}
+	public List<BigDecimal> getGananciasPorProducto() {
+		return gananciasPorProducto;
+	}
+	public void setGananciasPorProducto(List<BigDecimal> gananciasPorProducto) {
+		this.gananciasPorProducto = gananciasPorProducto;
 	}
 
 }
