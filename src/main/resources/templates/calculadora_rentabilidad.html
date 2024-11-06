@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Listado de Rentabilidad</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Función para calcular los kilos utilizables
+			function calcularKilosUtilizables() {
+			    const cantidadInputs = document.querySelectorAll('.cantidad');
+			    const desperdicioInputs = document.querySelectorAll('.desperdicio');
+			    const kilosUtilizablesInputs = document.querySelectorAll('.kilos-utilizables');
+			    const kilosUtilizablesHiddenInputs = document.querySelectorAll('.kilos-utilizables-hidden');
+
+			    cantidadInputs.forEach((cantidadInput, index) => {
+			        const cantidad = parseFloat(cantidadInput.value) || 0;
+			        const desperdicio = parseFloat(desperdicioInputs[index].value) || 0;
+			        const kilosUtilizables = cantidad - desperdicio;
+
+			        kilosUtilizablesInputs[index].value = kilosUtilizables >= 0 ? kilosUtilizables : 0;
+			        kilosUtilizablesHiddenInputs[index].value = kilosUtilizables >= 0 ? kilosUtilizables : 0;
+			    });
+			}
+
+
+            // Agregar event listeners a los inputs de desperdicio
+            const desperdicioInputs = document.querySelectorAll('.desperdicio');
+            desperdicioInputs.forEach(input => {
+                input.addEventListener('input', calcularKilosUtilizables);
+            });
+
+            // También aseguramos que se llame al cargar la página
+            calcularKilosUtilizables();
+
+            document.getElementById("cloneButton").addEventListener("click", function() {
+                fetch('/rentabilidad-calculadora/clonar', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Productos clonados exitosamente!');
+                        location.reload();
+                    } else {
+                        alert('Error al clonar productos.');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 antialiased font-sans p-6">
+    <div class="max-w-full mx-auto">
+        <h1 class="text-3xl font-bold mb-4 text-center text-blue-600">Listado de Rentabilidad</h1>
+        
+        <div class="overflow-x-auto mb-4">
+            <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+                <thead class="bg-blue-600 text-white">
+                    <tr>
+                        <th class="py-2 px-4 text-left">Nombre del Producto</th>
+                        <th class="py-2 px-4 text-left">Cantidad</th>
+                        <th class="py-2 px-4 text-left">Desperdicio</th>
+                        <th class="py-2 px-4 text-left">Kilos Utilizables</th>
+                        <th class="py-2 px-4 text-left">Precio de Compra</th>
+                        <th class="py-2 px-4 text-left">Precio de Venta</th>
+                        <th class="py-2 px-4 text-left">Ganancia Unitaria Bruta</th>
+                        <th class="py-2 px-4 text-left">Costo de Insumos</th>
+                        <th class="py-2 px-4 text-left">Gastos Adicionales</th>
+                        <th class="py-2 px-4 text-left">Costos de Producción</th>
+                        <th class="py-2 px-4 text-left">Ganancia Unitaria Neta</th>
+                        <th class="py-2 px-4 text-left">Rentabilidad Calculada</th>
+                        <th class="py-2 px-4 text-left">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                    <tr th:each="rentabilidadCalculadora : ${rentabilidadCalculadoras}" class="border-b hover:bg-gray-100">
+                        <form th:action="@{/rentabilidad-calculadora/actualizar}" method="post">
+                            <td class="py-2 px-4">
+                                <input type="text" name="nombreProducto" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.nombreProducto}" />
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="number" name="stock" class="border border-gray-300 rounded p-1 w-full cantidad" th:value="${rentabilidadCalculadora.stock}" min="0" />
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="number" name="desperdicio" class="border border-gray-300 rounded p-1 w-full desperdicio" th:value="${rentabilidadCalculadora.desperdicio}" min="0" />
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="text" class="border border-gray-300 rounded p-1 w-full kilos-utilizables" readonly />
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="number" name="precioCompra" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.precioCompra}"/>
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="number" name="precioVenta" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.precioVenta}"/>
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="text" class="border border-gray-300 rounded p-1 w-full" 
+                                       th:value="${rentabilidadCalculadora.precioVenta - rentabilidadCalculadora.precioCompra}" 
+                                       readonly />
+                            </td>
+
+                            <td class="py-2 px-4">
+                                <input type="number" name="costoInsumos" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.costoInsumos}"/>
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="number" name="gastosAdicionales" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.gastosAdicionales}"/>
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="number" name="costoProduccion" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.costoProduccion}"/>
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="text" class="border border-gray-300 rounded p-1 w-full"
+                                       th:value="${rentabilidadCalculadora.kilosUtilizables > 0 ?
+                                                  rentabilidadCalculadora.precioVenta 
+                                                  - rentabilidadCalculadora.precioCompra
+                                                  - ((rentabilidadCalculadora.costoInsumos + rentabilidadCalculadora.gastosAdicionales + rentabilidadCalculadora.costoProduccion) 
+                                                     / rentabilidadCalculadora.kilosUtilizables) 
+                                                  : 'N/A'}"
+                                       readonly />
+                            </td>
+
+                            <input type="hidden" name="kilosUtilizables" class="kilos-utilizables-hidden" />
+
+                            <td class="py-2 px-4">
+                                <input type="text" class="border border-gray-300 rounded p-1 w-full" th:value="${rentabilidadCalculadora.porcentajeRentabilidad} + '%'" readonly />
+                            </td>
+                            <td class="py-2 px-4">
+                                <input type="hidden" name="id" th:value="${rentabilidadCalculadora.id}" />
+                                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-2 rounded">Guardar</button>
+                            </td>
+                        </form>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 text-center">
+            <button type="button" id="cloneButton" class="bg-green-600 hover:bg-green-700 text-white py-2 px-3 rounded">Clonar Productos</button>
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="/rentabilidad-calculadora/nueva-rentabilidad" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded">Agregar Nueva Rentabilidad</a>
+        </div>
+    </div>
+</body>
+</html>

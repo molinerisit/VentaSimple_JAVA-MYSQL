@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Agregar Nueva Rentabilidad</title>
+    <!-- Tailwind CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans antialiased p-6">
+    <div class="max-w-3xl mx-auto bg-white shadow-md rounded-lg p-8">
+        <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">Agregar Nueva Rentabilidad</h1>
+
+        <form th:action="@{/rentabilidad-calculadora}" th:object="${rentabilidadCalculadora}" method="post" class="space-y-4">
+            <div>
+                <label for="nombreProducto" class="block text-sm font-medium text-gray-700">Nombre del Producto:</label>
+                <input type="text" id="nombreProducto" th:field="*{nombreProducto}" required
+                    class="mt-1 block w-full bg-gray-200 border border-gray-400 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+            <div>
+                <label for="precioCompra" class="block text-sm font-medium text-gray-700">Precio de Compra:</label>
+                <input type="number" id="precioCompra" th:field="*{precioCompra}" required step="0.01"
+                    class="mt-1 block w-full bg-gray-200 border border-gray-400 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+            <div>
+                <label for="precioVenta" class="block text-sm font-medium text-gray-700">Precio de Venta:</label>
+                <input type="number" id="precioVenta" th:field="*{precioVenta}" required step="0.01"
+                    class="mt-1 block w-full bg-gray-200 border border-gray-400 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+            <div>
+                <label for="costoInsumos" class="block text-sm font-medium text-gray-700">Costo de Insumos:</label>
+                <input type="number" id="costoInsumos" th:field="*{costoInsumos}" step="0.01"
+                    class="mt-1 block w-full bg-gray-200 border border-gray-400 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+            <div>
+                <label for="desperdicio" class="block text-sm font-medium text-gray-700">Desperdicio:</label>
+                <input type="number" id="desperdicio" th:field="*{desperdicio}" step="0.01"
+                    class="mt-1 block w-full bg-gray-200 border border-gray-400 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+            <div>
+                <label for="costoProduccion" class="block text-sm font-medium text-gray-700">Costo de Producción:</label>
+                <input type="number" id="costoProduccion" th:field="*{costoProduccion}" step="0.01"
+                    class="mt-1 block w-full bg-gray-200 border border-gray-400 rounded-md shadow-sm p-2 focus:ring-blue-500 focus:border-blue-500"/>
+            </div>
+
+            <div class="flex justify-end space-x-4">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">Guardar Rentabilidad</button>
+                <a href="/rentabilidad-calculadora" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

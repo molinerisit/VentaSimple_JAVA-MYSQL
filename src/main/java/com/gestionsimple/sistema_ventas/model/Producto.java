@@ -37,6 +37,8 @@ public class Producto {
     private BigDecimal grasaDesperdicio = BigDecimal.ZERO;
     private BigDecimal otrosDesperdicios = BigDecimal.ZERO;
     private BigDecimal valorInsumosVarios = BigDecimal.ZERO;
+    private BigDecimal costosFijos = BigDecimal.ZERO;
+    private BigDecimal costosVariables = BigDecimal.ZERO;
 
     private LocalDate fechaRegistro;
 
@@ -108,6 +110,14 @@ public class Producto {
 
     public void setPrecioVenta(BigDecimal precioVenta) {
         this.precioVenta = precioVenta;
+    }
+    
+    public BigDecimal getCostosFijos() {
+        return costosFijos;
+    }
+
+    public void setCostosFijos(BigDecimal costosFijos) {
+        this.costosFijos = costosFijos;
     }
 
     public int getStock() {
@@ -326,6 +336,14 @@ public class Producto {
 
 	public void setGananciaUnitariaNeta(BigDecimal gananciaUnitariaNeta) {
 		this.gananciaUnitariaNeta = gananciaUnitariaNeta;
+	}
+
+	public BigDecimal getCostosVariables() {
+		return costosVariables;
+	}
+
+	public void setCostosVariables(BigDecimal costosVariables) {
+		this.costosVariables = costosVariables;
 	}
 
 }
