@@ -281,6 +281,7 @@ public class CajaController {
 
 	    return buscarProducto(codigoDeBarras);
 	}
+	
 
 	private ProductoDTO buscarProducto(String codigoDeBarras) {
 	    Producto producto = productoService.getProductoByCodigoDeBarras(codigoDeBarras)
@@ -334,6 +335,4 @@ public class CajaController {
 		}
 		return new RedirectView("/login");
 	}
-
-
 }

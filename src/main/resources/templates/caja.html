@@ -28,13 +28,14 @@
 
 	    <!-- Escanear Código de Barras -->
 	    <div class="flex space-x-2 mb-4 p-2 bg-blue-100 border border-blue-300 rounded-lg shadow-md">
-	        <div class="flex-1">
-	            <label for="codigoDeBarras" class="block text-sm font-semibold mb-1">Escanear Código de Barras:</label>
-	            <div class="flex">
-	                <input type="text" id="codigoDeBarras" placeholder="Escanea aquí" class="flex-1 px-2 py-1 border rounded-md" />
-	                <button id="ingresarCodigoManual" class="bg-blue-500 text-white rounded-lg py-1 px-3 ml-1 hover:bg-blue-600 transition duration-300">Buscar</button>
-	            </div>	        
-	        </div>
+			<div class="flex-1">
+			    <label for="codigoDeBarras" class="block text-sm font-semibold mb-1">Escanear Código de Barras:</label>
+			    <div class="flex">
+			        <input type="text" id="codigoDeBarras" placeholder="Escanea aquí" class="flex-1 px-2 py-1 border rounded-md" autofocus/>
+			        <button id="ingresarCodigoManual" class="bg-blue-500 text-white rounded-lg py-1 px-3 ml-1 hover:bg-blue-600 transition duration-300">Buscar</button>
+			    </div>        
+			</div>
+
 	        <div class="flex-1">
 	            <label for="dni" class="block text-sm font-semibold mb-1">DNI del Cliente:</label>
 	            <div class="flex">
@@ -115,7 +116,7 @@
 	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('TARJETACREDITO')">Crédito (C)</button>
 	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('QR')">QR (Q)</button>
 	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="seleccionarMetodoPago('CUENTACORRIENTE')">CTA. CORRIENTE (W)</button>
-	                    <button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="">Cancelar (O)</button>
+						<button class="bg-green-500 text-white rounded py-1 px-2 text-xs hover:bg-green-600 transition w-24" onclick="location.reload()">Cancelar (O)</button>
 	                </div>
 	            </div>
 
@@ -295,6 +296,47 @@
 		});
 
 
+		let timer;
+
+		document.getElementById('codigoDeBarras').addEventListener('input', function() {
+		    const codigoDeBarras = document.getElementById('codigoDeBarras').value.trim();
+
+		    // Si ya hay un temporizador, lo cancelamos para reiniciarlo
+		    clearTimeout(timer);
+
+		    // Solo ejecutar la búsqueda si el campo no está vacío
+		    if (codigoDeBarras) {
+		        // Establecer un temporizador para que espere 500ms antes de hacer la búsqueda
+		        timer = setTimeout(function() {
+		            // Simular el clic en el botón "Buscar"
+		            document.getElementById('ingresarCodigoManual').click();
+		        }, 500); // Ajusta el tiempo a tu preferencia
+		    }
+		});
+
+		// El evento del botón "Buscar" se maneja aquí
+		document.getElementById('ingresarCodigoManual').addEventListener('click', function() {
+		    const codigoDeBarras = document.getElementById('codigoDeBarras').value.trim();
+
+		    if (codigoDeBarras) {
+		        // Aquí puedes realizar la lógica de búsqueda del producto con el código de barras
+		        console.log('Código ingresado:', codigoDeBarras);
+
+		        // Limpiar el campo de texto después de presionar el botón
+		        const inputField = document.getElementById('codigoDeBarras');
+		        inputField.value = '';  // Limpiar el campo de entrada
+
+		        // Enfocar el campo nuevamente
+		        inputField.focus();
+
+		        // Seleccionar todo el texto cuando el campo recibe el foco
+		        inputField.select();
+		    } else {
+		        alert('Por favor, ingrese un código de barras');
+		    }
+		});
+
+		
 		// Función para cerrar modales y salir de los inputs al presionar Escape
 		function cerrarModalesYSalirInputs() {
 		    // Cierra los modales si están abiertos
@@ -645,7 +687,6 @@
 		    actualizarTablaProductosSeleccionados();
 		}
 
-
 		function actualizarTablaProductosSeleccionados() {
 		    const tablaProductos = document.getElementById('tabla-productos-seleccionados');
 		    tablaProductos.innerHTML = '';
@@ -684,6 +725,7 @@
 		        });
 		    });
 		}
+
 			
 		function calcularVuelto(montoPagado, total) {
 		    return montoPagado - total;
@@ -903,10 +945,3 @@
 	</script>
 </body>
 </html>
-
-
-
-
-
-
-

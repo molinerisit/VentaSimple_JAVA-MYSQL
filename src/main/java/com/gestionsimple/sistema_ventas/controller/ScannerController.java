@@ -43,12 +43,14 @@ public class ScannerController {
         String codigoDeBarras = scannerConfigService.readBarcode(); // Lógica para leer el código de barras
 
         // Agregar log para depuración
+        System.out.println("Intentando leer código de barras...");  // <-- Log adicional
         System.out.println("Código de barras leído: " + codigoDeBarras);
 
         Map<String, String> response = new HashMap<>();
         response.put("codigoDeBarras", codigoDeBarras != null ? codigoDeBarras : "");
         return ResponseEntity.ok(response);
     }
+
 
 
     // Este método guarda la configuración seleccionada por el usuario
