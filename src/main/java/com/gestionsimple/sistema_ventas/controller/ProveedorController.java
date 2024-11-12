@@ -112,37 +112,36 @@ public class ProveedorController {
         return "redirect:/proveedores";
     }
 
-    // Mostrar formulario para editar un proveedor existente
     @GetMapping("/editar/{id}")
-    public String editProveedorForm(@PathVariable("id") Long id, Model model, HttpServletRequest request) {
-        logger.debug("Editando proveedor con ID: {}", id);
-        Proveedor proveedor = fetchProveedor(id);
+    public String editProveedorForm(@PathVariable Long id, Model model, HttpServletRequest request) {
+        Proveedor proveedor = proveedorService.getProveedorById(id);
         if (proveedor != null) {
             model.addAttribute("proveedor", proveedor);
             model.addAttribute("requestURI", request.getRequestURI());
-            return "editarProveedor";
+            return "crearProveedor";
         } else {
-            logger.error("Proveedor no encontrado con ID: {}", id);
             return "redirect:/proveedores";
         }
     }
+
+    
+    
 
     // Actualizar proveedor existente
     @PostMapping("/actualizar/{id}")
     public String updateProveedor(@PathVariable("id") Long id, @Valid @ModelAttribute("proveedor") Proveedor proveedor, BindingResult result, Model model) {
         if (result.hasErrors()) {
             logger.error("Error de validación al actualizar proveedor: {}", result.getAllErrors());
-            return "editarProveedor";
+            return "crearProveedor";
         }
-        logger.info("Actualizando proveedor con ID: {}", id);
         Proveedor existingProveedor = fetchProveedor(id);
         if (existingProveedor != null) {
+            // Aquí actualizas el proveedor
             existingProveedor.setNombre(proveedor.getNombre());
             existingProveedor.setContacto(proveedor.getContacto());
             existingProveedor.setDireccion(proveedor.getDireccion());
             existingProveedor.setTelefono(proveedor.getTelefono());
             existingProveedor.setEmail(proveedor.getEmail());
-            //existingProveedor.setDeuda(proveedor.getDeuda());
             existingProveedor.setPagos(proveedor.getPagos());
             proveedorService.saveProveedor(existingProveedor);
             return "redirect:/proveedores";
@@ -151,6 +150,7 @@ public class ProveedorController {
             return "redirect:/proveedores";
         }
     }
+
 
     // Eliminar un proveedor
     @GetMapping("/eliminar/{id}")

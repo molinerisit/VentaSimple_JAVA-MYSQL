@@ -61,8 +61,15 @@
         </div>
 
         <div class="mt-6 text-center">
-            <a th:href="@{/productos/crear}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Añadir nuevo producto</a>
+            <a th:href="@{/productos/crear}" class="bg-blue-500 text-white rounded-lg py-3 px-6 hover:bg-blue-600 transition duration-300">Añadir nuevo producto</a>
+			<a href="/compras" class="bg-blue-500 text-white rounded-lg py-3 px-6 hover:bg-blue-600 transition duration-300 btn-admin">Ingreso mercaderia</a>
+			<a th:href="@{/productos/gestionPrecios}" class="bg-blue-500 text-white rounded-lg py-3 px-6 hover:bg-blue-600 transition duration-300">Gestion de precios</a>
+			<a th:href="@{/productos/gestionStock}" class="bg-blue-500 text-white rounded-lg py-3 px-6 hover:bg-blue-600 transition duration-300">Gestion de stock</a>
+			<a th:href="@{/rentabilidad-calculadora}" class="bg-blue-500 text-white rounded-lg py-3 px-6 hover:bg-blue-600 transition duration-300">rentabilidad-calculadora</a>
+
         </div>
+		
     </div>
+
 </body>
 </html>

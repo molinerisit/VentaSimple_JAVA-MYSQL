@@ -79,18 +79,33 @@
 		                 <th class="py-2 px-4 text-left">Estado</th>
 		             </tr>
 		         </thead>
-		         <tbody class="text-gray-700">
-		             <tr th:each="deuda : ${proveedor.deudas}" class="border-b hover:bg-gray-100">
-						<td th:text="${formattedFechaDeuda}"></td>
-		                 <td th:text="${deuda.descripcion}" class="py-2 px-4"></td>
-		                 <td th:text="${#numbers.formatDecimal(deuda.monto, 1, 2)}" class="py-2 px-4"></td>
-		               <td th:text="${deuda.pagado ? 'Pagado' : 'Pendiente'}" class="py-2 px-4"></td>
-		             </tr>
-		             <tr th:if="${proveedor.deudas.size() == 0}">
-		                 <td colspan="4" class="text-center py-4">No hay deudas</td>
-		             </tr>
-		         </tbody>
+				 <tbody class="text-gray-700">
+				     <!-- Filtrar las deudas para solo mostrar las no pagadas -->
+				     <tr th:each="deuda : ${proveedor.deudas}" 
+				         th:if="${!deuda.pagado}" 
+				         class="border-b hover:bg-gray-100">
+						 <td th:text="${formattedFechaDeuda}"></td>
+				         <td th:text="${deuda.descripcion}" class="py-2 px-4"></td>
+				         <td th:text="${#numbers.formatDecimal(deuda.monto, 1, 2)}" class="py-2 px-4"></td>
+				         <td th:text="${deuda.pagado ? 'Pagado' : 'Pendiente'}" class="py-2 px-4"></td>
+				     </tr>
+				     
+				     <!-- Mensaje si no hay deudas -->
+				     <tr th:if="${proveedor.deudas.size() == 0}">
+				         <td colspan="4" class="text-center py-4">No hay deudas</td>
+				     </tr>
+				 </tbody>
+
 		     </table>
+			 
+			 <!-- Opción para registrar un nuevo pago -->
+			        <div class="mb-4 mt-5">
+			 		<a th:href="@{/proveedores/{id}/registrar-pago(id=${proveedor.id})}" 
+			 		   class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+			 		    Registrar Pago
+			 		</a>
+
+			        </div>
 		 </div>
 
 
@@ -132,14 +147,7 @@
 
         </div>
 
-        <!-- Opción para registrar un nuevo pago -->
-        <div class="mb-4">
-			<a th:href="@{/proveedores/{id}/registrar-pago(id=${proveedor.id})}" 
-			   class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
-			    Registrar Pago
-			</a>
-
-        </div>
+       
     </div>
 </body>
 </html>
