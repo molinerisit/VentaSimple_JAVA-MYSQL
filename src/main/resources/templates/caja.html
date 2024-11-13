@@ -239,6 +239,43 @@
 		    const botonesCerrarModales = document.querySelectorAll('.btn-cerrar-modal-clase');
 		    botonesCerrarModales.forEach(boton => boton.click());
 		}
+		
+		document.getElementById('codigoDeBarras').addEventListener('keydown', function(event) {
+		    if (event.key === 'Enter') {
+		        event.preventDefault(); // Prevenir el comportamiento por defecto del Enter
+		        document.getElementById('ingresarCodigoManual').click(); // Activar el botón
+		    }
+		});
+		
+		document.addEventListener('keydown', function(event) {
+		    if (event.key === 'Enter') {
+		        event.preventDefault(); // Prevenir el comportamiento por defecto del Enter
+
+		        // Verifica qué campo de entrada está activo
+		        const activeElement = document.activeElement;
+
+		        // Si el foco está en 'codigoDeBarras', activar el botón 'Buscar'
+		        if (activeElement.id === 'codigoDeBarras') {
+		            document.getElementById('ingresarCodigoManual').click();
+		        }
+
+		        // Si el foco está en el campo asociado a 'btn-guardar-dni-cuentacorriente', activar el botón
+		        if (activeElement.id === 'dni-cuentacorriente') {
+		            document.getElementById('btn-guardar-dni-cuentacorriente').click();
+		        }
+				
+				// Si el foco está en el campo asociado a 'btn-guardar-dni-cuentacorriente', activar el botón
+			    if (activeElement.id === 'dni-cliente') {
+				    document.getElementById('btn-aplicar-descuento').click();
+				}
+
+		        // Si el foco está en el campo asociado a 'btn-guardar-monto', activar el botón
+		        if (activeElement.id === 'monto-manual') {
+		            document.getElementById('btn-guardar-monto').click();
+		        }
+		    }
+		});
+
 
 		// Agregar los atajos de teclado
 		document.addEventListener('keydown', (event) => {
@@ -461,17 +498,21 @@
 
 		let metodoPago = ''; // Almacena el método de pago seleccionado
 
-		// Función para guardar el monto manual y agregar el producto a la lista
+		// Define el contador inicial para productos manuales
+		let contadorProductoManual = 1000001;
+
 		function guardarMontoManual() {
-		    console.log("Botón 'Guardar' fue clickeado"); // Agrega este log
+		    console.log("Botón 'Guardar' fue clickeado"); // Log para depuración
 		    
 		    const monto = parseFloat(document.getElementById('monto-manual').value);
 		    if (isNaN(monto) || monto <= 0) {
 		        alert("Por favor, ingrese un monto válido.");
 		        return;
 		    }
-		    
+
+		    // Crea el producto manual con un ID único autoincremental
 		    const productoManual = {
+		        producto: { id: contadorProductoManual++ },
 		        nombreProducto: "Ingresado Manualmente",
 		        descripcion: "Este producto fue ingresado manualmente",
 		        precioUnitario: monto,
@@ -479,6 +520,7 @@
 		        subtotal: monto
 		    };
 
+		    // Agrega el producto manual a la lista de productos seleccionados
 		    productosSeleccionados.push(productoManual);
 
 		    // Actualiza la tabla
@@ -682,6 +724,8 @@
 		                subtotal: parseFloat((cantidadCalculada * producto.precioVenta).toFixed(2)) // Redondear a dos decimales
 		            };
 		            productosSeleccionados.push(detalleVenta);
+					console.log(`Producto: ${producto.nombre}, Cantidad: ${cantidadCalculada}, Precio Unitario: ${producto.precioVenta}, Subtotal: ${cantidadCalculada * producto.precioVenta}`);
+
 		        }
 		    } else {
 		        // Para productos no pesables
@@ -869,6 +913,7 @@
 		});
 
 		// Función para registrar la venta
+		// Función para registrar la venta
 		function registrarVenta() {
 		    let totalVenta = 0;
 		    if (productosSeleccionados.length > 0) {
@@ -884,18 +929,34 @@
 
 		    const vuelto = calcularVuelto(montoPagado, totalConDescuento);
 		    const dniCliente = document.getElementById('dni-cliente').value.trim();
-			const deuda = (metodoPago === 'CUENTACORRIENTE') ? totalVenta : 0;
+		    const deuda = (metodoPago === 'CUENTACORRIENTE') ? totalVenta : 0;
+
+		    // Eliminar el id de los productos manuales antes de enviarlos al backend
+		    const productosSinId = productosSeleccionados.map(producto => {
+		        if (producto.producto && producto.producto.id >= 1000001) {  // Si el ID es de un producto manual
+		            const { id, ...productoSinId } = producto.producto;  // Elimina el id
+		            return {
+		                ...productoSinId,  // Devuelve el producto sin el id
+		                nombreProducto: producto.nombreProducto,
+		                descripcion: producto.descripcion,
+		                precioUnitario: producto.precioUnitario,
+		                cantidad: producto.cantidad,
+		                subtotal: producto.subtotal
+		            };
+		        }
+		        return producto;  // Si no es un producto manual, lo devuelve tal cual
+		    });
 
 		    const venta = {
-		        detallesVenta: productosSeleccionados,
+		        detallesVenta: productosSinId,  // Se envían los productos sin el campo id para los manuales
 		        metodoPago: metodoPago,
 		        total: totalVenta,
 		        montoPagado: montoPagado,
 		        vuelto: vuelto,
 		        descuento: descuentoAplicado,
-				deuda: deuda,  // Incluye la deuda en la venta
+		        deuda: deuda,  // Incluye la deuda en la venta
 		        dniCliente: dniCliente,
-				cuentaCorriente: (metodoPago === 'CUENTACORRIENTE')
+		        cuentaCorriente: (metodoPago === 'CUENTACORRIENTE')
 		    };
 
 		    console.log('Detalles de la venta:', JSON.stringify(venta, null, 2));

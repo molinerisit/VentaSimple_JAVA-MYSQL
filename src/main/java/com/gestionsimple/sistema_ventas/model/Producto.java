@@ -31,7 +31,7 @@ public class Producto {
 
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 0, message = "La cantidad debe ser mayor o igual a cero")
-    private int stock;
+    private double stock;
 
     private BigDecimal insumosVarios = BigDecimal.ZERO;
     private BigDecimal grasaDesperdicio = BigDecimal.ZERO;
@@ -120,11 +120,11 @@ public class Producto {
         this.costosFijos = costosFijos;
     }
 
-    public int getStock() {
+    public double getStock() {
         return stock;
     }
 
-    public void setStock(int stock) {
+    public void setStock(double stock) {
         this.stock = stock;
     }
     
@@ -279,10 +279,10 @@ public class Producto {
 		this.precioCompraAnterior = precioCompraAnterior;
 	}
 
-	public void actualizarInversionTotal(int cantidad) {
-	    if (precioCompra != null && cantidad > 0) {
+	public void actualizarInversionTotal(double d) {
+	    if (precioCompra != null && d > 0) {
 	        // Usa la cantidad para calcular la inversión total
-	        this.inversionTotal = this.precioCompra.multiply(BigDecimal.valueOf(cantidad));
+	        this.inversionTotal = this.precioCompra.multiply(BigDecimal.valueOf(d));
 	    } else {
 	        this.inversionTotal = BigDecimal.ZERO; // O un valor por defecto
 	    }

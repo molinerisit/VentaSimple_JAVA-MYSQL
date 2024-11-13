@@ -144,18 +144,22 @@ public class CajaController {
 
 	    recibo.append("Detalles de la compra:\n");
 
-	    // Procesar detalles de la venta
+	 // Procesar detalles de la venta
 	    for (DetalleVenta detalle : venta.getDetallesVenta()) {
+	    	System.out.println("Producto: " + detalle.getNombreProducto());
+	        System.out.println("Cantidad recibida: " + detalle.getCantidad());
+	        System.out.println("Subtotal recibido: " + detalle.getSubtotal());
 	        // Si el producto es manual o no registrado
 	        if (detalle.getProducto() == null || detalle.getProducto().getId() == null) {
 	            if (detalle.getNombreProducto() == null || detalle.getNombreProducto().isEmpty()) {
 	                detalle.setNombreProducto("Producto manual");
 	            }
-	            detalle.setSubtotal(detalle.getPrecioUnitario() * detalle.getCantidad());
+	            // Aseguramos que la cantidad y precio sean Double
+	            detalle.setSubtotal(detalle.getPrecioUnitario() * (double) detalle.getCantidad());
 	            totalVenta += detalle.getSubtotal();
 
 	            recibo.append("Producto: ").append(detalle.getNombreProducto()).append("\n");
-	            recibo.append("Cantidad: ").append(detalle.getCantidad()).append("\n");
+	            recibo.append("Cantidad: ").append(String.format("%.2f", (double) detalle.getCantidad())).append("\n");
 	            recibo.append("Precio Unitario: ").append(String.format("%.2f", detalle.getPrecioUnitario())).append("\n");
 	            recibo.append("Subtotal: ").append(String.format("%.2f", detalle.getSubtotal())).append("\n");
 	            recibo.append("-------------------------------\n");
@@ -165,17 +169,18 @@ public class CajaController {
 	            if (producto != null) {
 	                detalle.setNombreProducto(producto.getNombre());
 	                detalle.setPrecioUnitario(producto.getPrecioVenta().doubleValue());
-	                detalle.setSubtotal(producto.getPrecioVenta().doubleValue() * detalle.getCantidad());
+	                detalle.setSubtotal(producto.getPrecioVenta().doubleValue() * (double) detalle.getCantidad());
 	                totalVenta += detalle.getSubtotal();
 
 	                recibo.append("Producto: ").append(detalle.getNombreProducto()).append("\n");
-	                recibo.append("Cantidad: ").append(detalle.getCantidad()).append("\n");
+	                recibo.append("Cantidad: ").append(String.format("%.2f", (double) detalle.getCantidad())).append("\n"); // Formato de cantidad
 	                recibo.append("Precio Unitario: ").append(String.format("%.2f", detalle.getPrecioUnitario())).append("\n");
 	                recibo.append("Subtotal: ").append(String.format("%.2f", detalle.getSubtotal())).append("\n");
 	                recibo.append("-------------------------------\n");
 	            }
 	        }
 	    }
+
 
 	    // Aplicar el descuento del cliente
 	    double descuentoAplicado = (totalVenta * descuentoCliente) / 100;
@@ -211,6 +216,14 @@ public class CajaController {
 	    // Agregar totales al recibo
 	    recibo.append("Subtotal sin descuentos: ").append(String.format("%.2f", totalVenta)).append("\n");
 	    recibo.append("Descuentos: ").append(String.format("%.2f", descuentoAplicado)).append("\n");
+	    
+	    double porcentajeDescuento = 0;
+	    if (totalVenta > 0) {
+	        porcentajeDescuento = (descuentoAplicado / totalVenta) * 100; // Calcular el porcentaje de descuento
+	    }
+
+	    // Agregar el porcentaje de descuento aplicado, si existe, o 0 si no hay descuento
+	    recibo.append("Descuento Aplicado: ").append(String.format("%.2f", porcentajeDescuento)).append("%\n");
 	    recibo.append("Recargo: ").append(String.format("%.2f", recargo)).append("\n"); // Añadir el recargo al recibo
 	    recibo.append("Total: ").append(String.format("%.2f", totalConDescuento + recargo)).append("\n"); // Mostrar el total con recargo
 

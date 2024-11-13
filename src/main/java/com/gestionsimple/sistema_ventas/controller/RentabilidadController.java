@@ -57,7 +57,7 @@ public class RentabilidadController {
             producto.setOtrosDesperdicios(BigDecimal.valueOf(datos.getOrDefault("otrosDesperdicios", 0.0)));
 
             // Obtener kilos utilizables
-            int cantidadLote = producto.getStock();  // Stock original del producto
+            double cantidadLote = producto.getStock();  // Stock original del producto
             Double grasaDesperdicio = datos.getOrDefault("grasaDesperdicio", 0.0);
             Double otrosDesperdicios = datos.getOrDefault("otrosDesperdicios", 0.0);
             Double kilosUtilizables = cantidadLote - grasaDesperdicio - otrosDesperdicios;

@@ -25,7 +25,7 @@ public class DetalleVenta {
     @JoinColumn(name = "venta_id")
     private Venta venta;
 
-    private int cantidad;
+    private double cantidad;
     private double precio;
     private double subtotal;
     private LocalDate fecha; // Campo adicional para fecha
@@ -64,11 +64,11 @@ public class DetalleVenta {
         this.venta = venta;
     }
 
-    public int getCantidad() {
+    public double getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) {
+    public void setCantidad(double cantidad) {
         this.cantidad = cantidad;
     }
 

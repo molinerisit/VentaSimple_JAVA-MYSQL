@@ -126,15 +126,16 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public void actualizarStock(Long id, int cantidad) {
+    public void actualizarStock(Long id, double cantidad) {
         Producto producto = productoRepository.findById(id).orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        int nuevoStock = producto.getStock() + cantidad; // Se suma la cantidad para aumentar o disminuir el stock
+        double nuevoStock = producto.getStock() + cantidad; // Sumar o restar la cantidad como double
         if (nuevoStock < 0) {
             throw new RuntimeException("Stock insuficiente");
         }
-        producto.setStock(nuevoStock);
+        producto.setStock(nuevoStock);  // Asegúrate de que la propiedad stock en el producto sea de tipo double
         productoRepository.save(producto);
     }
+
     
     @Override
     @Transactional
@@ -199,6 +200,8 @@ public class ProductoServiceImpl implements ProductoService {
         logger.info("Obteniendo historial de precios para el producto con ID: {}", id);
         return historialPrecioRepository.findByProductoId(id); // Asegúrate de que el repositorio tenga este método
     }
+
+
 
 	
    

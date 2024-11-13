@@ -55,7 +55,7 @@ public class RentabilidadCalculadora {
     @Column(nullable = false)
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 0, message = "La cantidad debe ser mayor o igual a cero")
-    private int stock;
+    private double stock;
 
     @NotNull(message = "La cantidad de kilos utilizables es obligatoria")
     private BigDecimal kilosUtilizables; // Nuevo campo para la cantidad de kilos utilizables
@@ -166,11 +166,11 @@ public class RentabilidadCalculadora {
         this.gananciaUnitariaNeta = gananciaUnitariaNeta;
     }
 
-	public int getStock() {
+	public double getStock() {
 		return stock;
 	}
 
-	public void setStock(int stock) {
+	public void setStock(double stock) {
 		this.stock = stock;
 	}
 	

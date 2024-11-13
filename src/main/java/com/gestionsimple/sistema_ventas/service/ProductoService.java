@@ -15,12 +15,12 @@ public interface ProductoService {
     void guardarProducto(Producto producto);
     List<Producto> obtenerTodosLosProductos();
     void eliminarProducto(Long id);
-    void actualizarStock(Long id, int newStock);
     void actualizarPrecioCompra(Long id, double newPrecioCompra);
     boolean productoInvolucradoEnVenta(Long id); // Nuevo método
 	List<Producto> buscarPorCategoriaYActivo(Categoria categoria, boolean activo);
     List<HistorialPrecio> obtenerHistorialPrecios(Long id);
 	Optional<Producto> getProductoByCodigoDeBarras(String codigoDeBarras);
+    void actualizarStock(Long id, double cantidad);  // Cambiar int por double
 }
 
 
