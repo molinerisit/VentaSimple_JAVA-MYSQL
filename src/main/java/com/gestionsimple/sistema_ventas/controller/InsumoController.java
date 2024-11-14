@@ -120,7 +120,7 @@ public class InsumoController {
 
     // Actualizar stock de insumo
     @PostMapping("/{id}/actualizarStock")
-    public String actualizarStock(@PathVariable Long id, @RequestParam("newStock") int newStock, RedirectAttributes redirectAttributes) {
+    public String actualizarStock(@PathVariable Long id, @RequestParam("newStock") Double newStock, RedirectAttributes redirectAttributes) {
         insumoService.actualizarStock(id, newStock);
         redirectAttributes.addFlashAttribute("message", "Stock actualizado correctamente.");
         return "redirect:/insumos";

@@ -63,13 +63,14 @@ public class InsumoServiceImpl implements InsumoService {
 
     @Override
     @Transactional
-    public void actualizarStock(Long id, int newStock) {
+    public void actualizarStock(Long id, Double newStock) {
         Insumo insumo = obtenerInsumoPorId(id);
         if (insumo != null) {
-            insumo.setStock(newStock);
+            insumo.setStock(newStock); // Ya no es necesario hacer la conversión
             guardarInsumo(insumo);
         }
     }
+
 
     @Override
     @Transactional

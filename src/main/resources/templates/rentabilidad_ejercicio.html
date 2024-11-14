@@ -221,16 +221,30 @@
                                     <th class="p-2">Ganancia Total</th>
                                 </tr>
                             </thead>
-                            <tbody th:each="detalle : ${venta.detallesVenta}">
-                                <tr>
-                                    <td th:text="${detalle.producto.nombre}" class="p-2 text-gray-700"></td>
-                                    <td th:text="${detalle.cantidad}" class="p-2 text-gray-700"></td>
-                                    <td th:text="${detalle.producto.precioVenta}" class="p-2 text-gray-700"></td>
-                                    <td th:attr="data-precio=${detalle.producto.precioCompra}" th:text="${detalle.producto.precioCompra}" class="p-2 text-gray-700"></td>
-                                    <td th:text="${detalle.producto.precioVenta - detalle.producto.precioCompra}" class="p-2 text-gray-700"></td>
-                                    <td th:text="${detalle.cantidad * (detalle.producto.precioVenta - detalle.producto.precioCompra)}" class="p-2 text-gray-700"></td>
-                                </tr>
-                            </tbody>
+							<tbody th:each="detalle : ${venta.detallesVenta}">
+							    <tr>
+							        <!-- Si el producto es nulo, muestra "Producto ingresado manual", si no, muestra el nombre del producto -->
+							        <td th:text="${detalle.producto != null ? detalle.producto.nombre : 'Producto ingresado manual'}" class="p-2 text-gray-700"></td>
+							        <td th:text="${detalle.cantidad}" class="p-2 text-gray-700"></td>
+							        
+							        <!-- Precio de venta, si el producto es nulo, usa el precio manual -->
+									<td th:text="${detalle.producto != null ? detalle.producto.precioVenta : detalle.subtotal}" class="p-2 text-gray-700"></td>
+
+									<td th:attr="data-precio=${detalle.producto != null ? detalle.producto.precioCompra : (detalle.subtotal - (detalle.subtotal * 0.30))}" 
+									    th:text="${detalle.producto != null ? detalle.producto.precioCompra : (detalle.subtotal - (detalle.subtotal * 0.30))}" 
+									    class="p-2 text-gray-700"></td>
+
+									<td th:text="${detalle.producto != null ? (detalle.producto.precioVenta - detalle.producto.precioCompra) : (detalle.subtotal - (detalle.subtotal * 0.30) - (detalle.subtotal * 0.30))}" 
+									    class="p-2 text-gray-700"></td>
+
+									<td th:text="${detalle.producto != null ? (detalle.cantidad * (detalle.producto.precioVenta - detalle.producto.precioCompra)) : (detalle.cantidad * (detalle.subtotal - (detalle.subtotal * 0.30) - (detalle.subtotal * 0.30)))}" 
+									    class="p-2 text-gray-700"></td>
+
+							    </tr>
+							</tbody>
+
+							
+
                         </table>
                     </td>
 					<td th:text="${venta.subtotal}" class="px-6 py-4"></td>

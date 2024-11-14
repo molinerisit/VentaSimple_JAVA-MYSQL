@@ -225,6 +225,9 @@ public class CajaController {
 	    // Agregar el porcentaje de descuento aplicado, si existe, o 0 si no hay descuento
 	    recibo.append("Descuento Aplicado: ").append(String.format("%.2f", porcentajeDescuento)).append("%\n");
 	    recibo.append("Recargo: ").append(String.format("%.2f", recargo)).append("\n"); // Añadir el recargo al recibo
+	    
+        recibo.append("-------------------------------\n");
+
 	    recibo.append("Total: ").append(String.format("%.2f", totalConDescuento + recargo)).append("\n"); // Mostrar el total con recargo
 
 	    // Calcular vuelto si el método de pago es efectivo
@@ -238,6 +241,12 @@ public class CajaController {
 
 	    recibo.append("\n\n"); // Espacio en blanco al final para el corte del ticket
 	    recibo.append("-------- GRACIAS POR SU COMPRA --------\n");
+	    recibo.append("\n\n"); // Espacio en blanco al final para el corte del ticket
+	    
+	    recibo.append("        ######################        \n");
+	    recibo.append("        #   LA MACELLERIA    #        \n");
+	    recibo.append("        ######################        \n");
+	    
 	    recibo.append("\n\n"); // Espacio en blanco al final para el corte del ticket
 
 	    // Guardar la venta en la base de datos

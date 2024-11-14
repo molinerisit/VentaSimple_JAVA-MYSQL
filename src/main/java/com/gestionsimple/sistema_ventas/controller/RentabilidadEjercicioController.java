@@ -119,15 +119,26 @@ public class RentabilidadEjercicioController {
             List<BigDecimal> gananciasPorProducto = new ArrayList<>(); // Inicializa la lista de ganancias por producto
 
             for (DetalleVenta detalle : detallesVenta) {
-                BigDecimal precioVenta = detalle.getProducto().getPrecioVenta();
-                BigDecimal precioCompra = detalle.getProducto().getPrecioCompra();
+                BigDecimal precioVenta;
+                BigDecimal precioCompra;
+
+                if (detalle.getProducto() != null) {
+                    // Si el producto no es manual, tomamos los valores directamente del producto
+                    precioVenta = detalle.getProducto().getPrecioVenta();
+                    precioCompra = detalle.getProducto().getPrecioCompra();
+                } else {
+                    // Si el producto es manual, usamos el precio ingresado y calculamos el precio de compra
+                    precioVenta = BigDecimal.valueOf(detalle.getPrecio()); // Precio manual
+                    precioCompra = precioVenta.subtract(precioVenta.multiply(BigDecimal.valueOf(0.30))); // 30% menos
+                }
+
+                // Calculamos la ganancia
                 BigDecimal gananciaProducto = precioVenta.subtract(precioCompra);
                 totalGanancia = totalGanancia.add(gananciaProducto.multiply(BigDecimal.valueOf(detalle.getCantidad())));
-                
-                
-                // Agregar la ganancia del producto a la lista
                 gananciasPorProducto.add(gananciaProducto.multiply(BigDecimal.valueOf(detalle.getCantidad())));
             }
+
+
 
             rentabilidadDTO.setGananciaTotal(totalGanancia);
             rentabilidadDTO.setSubtotal(subtotal); // Asigna el subtotal calculado
@@ -144,6 +155,7 @@ public class RentabilidadEjercicioController {
 
         return rentabilidadList;
     }
+
 
 
 

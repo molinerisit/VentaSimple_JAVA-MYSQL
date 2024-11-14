@@ -128,7 +128,7 @@ public class CompraInsumoController {
         // Actualizar stock de insumo
         Insumo insumo = insumoService.obtenerInsumoPorId(compraInsumo.getInsumo().getId());
         if (insumo != null) {
-            insumo.setStock(insumo.getStock() + (int) compraInsumo.getCantidad());
+            insumo.setStock(insumo.getStock() + (Double) compraInsumo.getCantidad());
             insumo.setPrecioCompra(BigDecimal.valueOf(compraInsumo.getPrecioCompra()));
             insumoService.guardarInsumo(insumo);
         } else {

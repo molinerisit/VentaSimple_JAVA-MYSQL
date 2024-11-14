@@ -35,7 +35,7 @@ public class Insumo {
 
     @NotNull(message = "La cantidad es obligatoria")
     @Min(value = 0, message = "La cantidad debe ser mayor o igual a cero")
-    private int stock;
+    private Double stock = 0.0;
 
     private BigDecimal grasaDesperdicio = BigDecimal.ZERO;
     private BigDecimal otrosDesperdicios = BigDecimal.ZERO;
@@ -97,11 +97,11 @@ public class Insumo {
         this.precioVenta = precioVenta;
     }
 
-    public int getStock() {
+    public Double getStock() {
         return stock;
     }
 
-    public void setStock(int stock) {
+    public void setStock(Double stock) {
         this.stock = stock;
     }
 

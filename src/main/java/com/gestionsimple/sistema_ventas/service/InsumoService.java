@@ -13,7 +13,7 @@ public interface InsumoService { // Cambiado
     void guardarInsumo(Insumo insumo); // Cambiado
     List<Insumo> obtenerTodosLosInsumos(); // Cambiado
     void eliminarInsumo(Long id); // Cambiado
-    void actualizarStock(Long id, int newStock); // Cambiado
+    void actualizarStock(Long id, Double newStock); // Cambiado
     void actualizarPrecioCompra(Long id, double newPrecioCompra); // Cambiado
     boolean insumoInvolucradoEnVenta(Long id); // Cambiado
     List<Insumo> buscarPorCategoriaYActivo(Categoria categoria, boolean activo); // Cambiado
