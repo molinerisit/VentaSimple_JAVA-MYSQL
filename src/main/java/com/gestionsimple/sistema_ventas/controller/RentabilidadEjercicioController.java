@@ -22,10 +22,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.gestionsimple.sistema_ventas.dto.BalanceDTO;
 import com.gestionsimple.sistema_ventas.dto.InsumoDTO;
 import com.gestionsimple.sistema_ventas.dto.RentabilidadEjercicioDTO;
+import com.gestionsimple.sistema_ventas.model.Balance;
 import com.gestionsimple.sistema_ventas.model.DetalleVenta;
 import com.gestionsimple.sistema_ventas.model.Insumo;
 import com.gestionsimple.sistema_ventas.model.Venta;
 import com.gestionsimple.sistema_ventas.repository.InsumoRepository;
+import com.gestionsimple.sistema_ventas.service.BalanceService;
 import com.gestionsimple.sistema_ventas.service.DetalleVentaService;
 import com.gestionsimple.sistema_ventas.service.InsumoService;
 import com.gestionsimple.sistema_ventas.service.RentabilidadEjercicioService;
@@ -44,6 +46,9 @@ public class RentabilidadEjercicioController {
     @Autowired
     private InsumoRepository insumoRepository;
 
+    @Autowired
+    private BalanceService balanceService;
+    
     @Autowired
     private RentabilidadEjercicioService rentabilidadEjercicioService;
 
@@ -67,6 +72,11 @@ public class RentabilidadEjercicioController {
             fechaFin = LocalDate.parse(fechaFinStr, formatter);
         }
 
+        // Obtener los balances
+        List<Balance> balances = balanceService.obtenerTodosBalances();
+        model.addAttribute("balances", balances);
+
+        
         List<Venta> ventas;
         if (fechaInicio != null && fechaFin != null) {
             ventas = ventaService.obtenerVentasPorRangoFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23, 59, 59));
@@ -155,9 +165,6 @@ public class RentabilidadEjercicioController {
 
         return rentabilidadList;
     }
-
-
-
 
     
     @PostMapping("/actualizarStockInsumos")

@@ -28,6 +28,12 @@ public class BalanceService {
 
         return balanceRepository.save(balance);
     }
+    
+    public Balance obtenerBalancePorId(Long id) {
+        return balanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Balance no encontrado con ID: " + id));
+    }
+
 
 
 public List<Balance> obtenerTodosBalances() {

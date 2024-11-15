@@ -285,7 +285,9 @@
 		        </tr>
 		    </tbody>
 		</table>
-
+		
+		
+		
 
         <!-- Acciones finales -->
         <div class="flex space-x-4 mb-10">
@@ -321,7 +323,26 @@
                 </tr>
             </tbody>
         </table>
+		
+		<!-- Listado de balances anteriores -->
+		<div class="mb-8">
+		    <h2 class="text-xl font-bold mb-4">Balances Anteriores</h2>
+		    <div class="flex flex-col gap-4"> <!-- Cambié 'flex-wrap' por 'flex-col' -->
+		        <div th:each="balance : ${balances}">
+					<form th:action="@{/rentabilidad-ejercicio/balances/{id}(id=${balance.id})}" method="get">
+		                <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+		                    <span th:text="${balance.fechaCreacion}"></span> <!-- Aquí se muestra la fecha formateada -->
+		                </button>
+		            </form>
+		        </div>
+		    </div>
+		</div>
+
     </div>
+	
+
+
+	   
 </body>
 
 </html>

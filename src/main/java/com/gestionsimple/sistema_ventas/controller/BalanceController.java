@@ -71,4 +71,20 @@ public class BalanceController {
         model.addAttribute("balances", balancesFormateados);
         return "balances";
     }
+
+// Nueva ruta para mostrar el detalle de un balance específico
+@GetMapping("/balances/{id}")
+public String mostrarDetalleBalance(@PathVariable("id") Long id, Model model) {
+    // Buscar el balance por su ID
+    Balance balance = balanceService.obtenerBalancePorId(id);
+    
+    // Comprobar si el balance existe
+    if (balance != null) {
+        model.addAttribute("balance", balance); // Pasar el balance al modelo
+        return "balance"; // Nombre de la vista que se va a mostrar
+    } else {
+        return "redirect:/rentabilidad-ejercicio/balances"; // Redirigir si no se encuentra el balance
+    }
 }
+}
+

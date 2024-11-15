@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Detalle del Balance</title>
+</head>
+<body>
+    <h1>Detalle del Balance</h1>
+    <p><strong>Fecha:</strong> <span th:text="${#temporals.format(balance.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></p>
+    <p><strong>Inversión Total:</strong> <span th:text="${balance.inversionTotal}"></span></p>
+    <p><strong>Dinero Total Recaudado:</strong> <span th:text="${balance.dineroTotalRecaudado}"></span></p>
+    <p><strong>Gasto en Insumos:</strong> <span th:text="${balance.gastoInsumos}"></span></p>
+    <p><strong>Ganancia Total:</strong> <span th:text="${balance.gananciaTotal}"></span></p>
+    <p><strong>Balance Neto:</strong> <span th:text="${balance.balanceNeto}"></span></p>
+
+    
+</body>
+</html>
