@@ -1,6 +1,9 @@
 package com.gestionsimple.sistema_ventas.model;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Set;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -29,6 +32,9 @@ public class Balance {
     @Column(name = "balance_neto") // Nuevo campo
     private double balanceNeto;
 
+    
+    @ElementCollection
+    private Set<LocalDate> fechasCompras; // Este es el nuevo campo para las fechas
     
     // Getters and Setters
     public Long getId() {
@@ -85,5 +91,13 @@ public class Balance {
 
     public void setFechaCreacion(LocalDateTime fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+    
+    public Set<LocalDate> getFechasCompras() {
+        return fechasCompras;
+    }
+
+    public void setFechasCompras(Set<LocalDate> fechasCompras) {
+        this.fechasCompras = fechasCompras;
     }
 }

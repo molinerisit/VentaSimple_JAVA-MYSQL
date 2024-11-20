@@ -1,17 +1,32 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
     <title>Detalle del Balance</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-    <h1>Detalle del Balance</h1>
-    <p><strong>Fecha:</strong> <span th:text="${#temporals.format(balance.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></p>
-    <p><strong>Inversión Total:</strong> <span th:text="${balance.inversionTotal}"></span></p>
-    <p><strong>Dinero Total Recaudado:</strong> <span th:text="${balance.dineroTotalRecaudado}"></span></p>
-    <p><strong>Gasto en Insumos:</strong> <span th:text="${balance.gastoInsumos}"></span></p>
-    <p><strong>Ganancia Total:</strong> <span th:text="${balance.gananciaTotal}"></span></p>
-    <p><strong>Balance Neto:</strong> <span th:text="${balance.balanceNeto}"></span></p>
+<body class="bg-gray-100">
 
-    
+    <div class="container mx-auto py-8 px-4">
+        <h1 class="text-3xl font-bold mb-8 text-center text-gray-700">Detalle del Balance</h1>
+
+        <!-- Detalles del balance -->
+        <div class="bg-white shadow-lg rounded-lg p-6 mb-8">
+            <p class="text-lg text-gray-700 font-semibold"><strong>Fecha de Creación:</strong> <span th:text="${#temporals.format(balance.fechaCreacion, 'dd/MM/yyyy')}"></span></p>
+            <p class="text-lg text-gray-700 font-semibold"><strong>Inversión Total:</strong> <span th:text="${balance.inversionTotal}"></span></p>
+            <p class="text-lg text-gray-700 font-semibold"><strong>Dinero Total Recaudado:</strong> <span th:text="${balance.dineroTotalRecaudado}"></span></p>
+            <p class="text-lg text-gray-700 font-semibold"><strong>Gasto en Insumos:</strong> <span th:text="${balance.gastoInsumos}"></span></p>
+            <p class="text-lg text-gray-700 font-semibold"><strong>Ganancia Total:</strong> <span th:text="${balance.gananciaTotal}"></span></p>
+            <p class="text-lg text-gray-700 font-semibold"><strong>Balance Neto:</strong> <span th:text="${balance.balanceNeto}"></span></p>
+        </div>
+
+        <!-- Fechas de compras -->
+        <div class="bg-white shadow-lg rounded-lg p-6">
+            <p class="text-lg text-gray-700 font-semibold"><strong>Fechas incluídas:</strong></p>
+            <ul class="list-disc pl-6">
+                <li th:each="fecha : ${balance.fechasCompras}" th:text="${#temporals.format(fecha, 'dd/MM/yyyy')}"></li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>

@@ -59,24 +59,37 @@ public class RentabilidadEjercicioController {
     public String mostrarRentabilidad(@RequestParam(value = "fechaInicio", required = false) String fechaInicioStr,
                                       @RequestParam(value = "fechaFin", required = false) String fechaFinStr,
                                       Model model) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("dd-MM-yy");
 
         LocalDate fechaInicio = null;
         LocalDate fechaFin = null;
-        
+
         if (fechaInicioStr != null && !fechaInicioStr.isEmpty()) {
-            fechaInicio = LocalDate.parse(fechaInicioStr, formatter);
+            fechaInicio = LocalDate.parse(fechaInicioStr, inputFormatter);
         }
-
         if (fechaFinStr != null && !fechaFinStr.isEmpty()) {
-            fechaFin = LocalDate.parse(fechaFinStr, formatter);
+            fechaFin = LocalDate.parse(fechaFinStr, inputFormatter);
         }
 
-        // Obtener los balances
         List<Balance> balances = balanceService.obtenerTodosBalances();
-        model.addAttribute("balances", balances);
+        List<BalanceDTO> balanceDTOs = balances.stream().map(balance -> {
+            BalanceDTO dto = new BalanceDTO();
+            dto.setId(balance.getId());
+            dto.setGananciaTotal(BigDecimal.valueOf(balance.getGananciaTotal()));
+            dto.setInversionTotal(BigDecimal.valueOf(balance.getInversionTotal()));
+            dto.setDineroTotalRecaudado(BigDecimal.valueOf(balance.getDineroTotalRecaudado()));
+            dto.setGastoInsumos(BigDecimal.valueOf(balance.getGastoInsumos()));
+            dto.setFechaCreacion(balance.getFechaCreacion());
+            
+            // Establecer las fechas de compra en el DTO
+            dto.setFechasCompras(balance.getFechasCompras());
 
-        
+            return dto;
+        }).toList();
+
+        model.addAttribute("balances", balanceDTOs);
+
         List<Venta> ventas;
         if (fechaInicio != null && fechaFin != null) {
             ventas = ventaService.obtenerVentasPorRangoFechas(fechaInicio.atStartOfDay(), fechaFin.atTime(23, 59, 59));
@@ -84,20 +97,17 @@ public class RentabilidadEjercicioController {
             ventas = ventaService.obtenerTodasVentas();
         }
 
-        // Obtiene la rentabilidad y detalles de las ventas
         List<RentabilidadEjercicioDTO> rentabilidadPorVenta = calcularRentabilidadConDetalles(ventas);
-        BigDecimal gananciaTotalPeriodo = calcularGananciaTotalPeriodo(rentabilidadPorVenta); // Calcular la ganancia total del período
+        BigDecimal gananciaTotalPeriodo = calcularGananciaTotalPeriodo(rentabilidadPorVenta);
         model.addAttribute("rentabilidadPorVenta", rentabilidadPorVenta);
-        model.addAttribute("gananciaTotalPeriodo", gananciaTotalPeriodo); // Agregar al modelo
+        model.addAttribute("gananciaTotalPeriodo", gananciaTotalPeriodo);
 
-        // Obtener todos los insumos y agregarlos al modelo
         List<Insumo> insumos = insumoService.obtenerTodosLosInsumos();
-        model.addAttribute("insumos", insumos); // Agregar insumos al modelo
+        model.addAttribute("insumos", insumos);
 
         return "rentabilidad_ejercicio";
     }
 
-    // Método para calcular la ganancia total del período
     private BigDecimal calcularGananciaTotalPeriodo(List<RentabilidadEjercicioDTO> rentabilidadPorVenta) {
         BigDecimal gananciaTotal = BigDecimal.ZERO;
         for (RentabilidadEjercicioDTO rentabilidad : rentabilidadPorVenta) {
@@ -105,7 +115,6 @@ public class RentabilidadEjercicioController {
         }
         return gananciaTotal;
     }
-
 
     private List<RentabilidadEjercicioDTO> calcularRentabilidadConDetalles(List<Venta> ventas) {
         List<RentabilidadEjercicioDTO> rentabilidadList = new ArrayList<>();
@@ -117,48 +126,41 @@ public class RentabilidadEjercicioController {
             rentabilidadDTO.setFechaHora(fechaHora);
             rentabilidadDTO.setMetodoPago(venta.getMetodoPago());
 
-            // Obtener detalles de la venta
             List<DetalleVenta> detallesVenta = detalleVentaService.obtenerDetallesPorVenta(venta.getId());
             rentabilidadDTO.setDetallesVenta(detallesVenta);
 
-            BigDecimal totalGanancia = BigDecimal.ZERO; // Inicializa la ganancia total
-            BigDecimal subtotal = BigDecimal.valueOf(venta.getSubtotalSinDescuentos()); // Asigna el subtotal
-            BigDecimal descuento = BigDecimal.valueOf(venta.getMontoDescuento()); // Asigna el descuento
-            BigDecimal recargo = BigDecimal.valueOf(venta.getRecargo()); // Asigna el recargo
+            BigDecimal totalGanancia = BigDecimal.ZERO;
+            BigDecimal subtotal = BigDecimal.valueOf(venta.getSubtotalSinDescuentos());
+            BigDecimal descuento = BigDecimal.valueOf(venta.getMontoDescuento());
+            BigDecimal recargo = BigDecimal.valueOf(venta.getRecargo());
             
-            List<BigDecimal> gananciasPorProducto = new ArrayList<>(); // Inicializa la lista de ganancias por producto
+            List<BigDecimal> gananciasPorProducto = new ArrayList<>();
 
             for (DetalleVenta detalle : detallesVenta) {
                 BigDecimal precioVenta;
                 BigDecimal precioCompra;
 
                 if (detalle.getProducto() != null) {
-                    // Si el producto no es manual, tomamos los valores directamente del producto
                     precioVenta = detalle.getProducto().getPrecioVenta();
                     precioCompra = detalle.getProducto().getPrecioCompra();
                 } else {
-                    // Si el producto es manual, usamos el precio ingresado y calculamos el precio de compra
-                    precioVenta = BigDecimal.valueOf(detalle.getPrecio()); // Precio manual
-                    precioCompra = precioVenta.subtract(precioVenta.multiply(BigDecimal.valueOf(0.30))); // 30% menos
+                    precioVenta = BigDecimal.valueOf(detalle.getPrecio());
+                    precioCompra = precioVenta.subtract(precioVenta.multiply(BigDecimal.valueOf(0.30)));
                 }
 
-                // Calculamos la ganancia
                 BigDecimal gananciaProducto = precioVenta.subtract(precioCompra);
                 totalGanancia = totalGanancia.add(gananciaProducto.multiply(BigDecimal.valueOf(detalle.getCantidad())));
                 gananciasPorProducto.add(gananciaProducto.multiply(BigDecimal.valueOf(detalle.getCantidad())));
             }
 
-
-
             rentabilidadDTO.setGananciaTotal(totalGanancia);
-            rentabilidadDTO.setSubtotal(subtotal); // Asigna el subtotal calculado
-            rentabilidadDTO.setDescuento(descuento); // Asigna el descuento total
-            rentabilidadDTO.setRecargo(recargo); // Asigna el recargo total
-            rentabilidadDTO.setGananciasPorProducto(gananciasPorProducto); // Agregar la lista de ganancias por producto
+            rentabilidadDTO.setSubtotal(subtotal);
+            rentabilidadDTO.setDescuento(descuento);
+            rentabilidadDTO.setRecargo(recargo);
+            rentabilidadDTO.setGananciasPorProducto(gananciasPorProducto);
             
-            // Cálculo del total y asignación
-            BigDecimal totalVenta = subtotal.subtract(descuento).add(recargo); // Aquí calculamos el total
-            rentabilidadDTO.setTotalVenta(totalVenta); // Asignamos el total
+            BigDecimal totalVenta = subtotal.subtract(descuento).add(recargo);
+            rentabilidadDTO.setTotalVenta(totalVenta);
 
             rentabilidadList.add(rentabilidadDTO);
         }
@@ -166,17 +168,14 @@ public class RentabilidadEjercicioController {
         return rentabilidadList;
     }
 
-    
     @PostMapping("/actualizarStockInsumos")
     public ResponseEntity<String> actualizarStockInsumos(@RequestBody List<InsumoDTO> insumos) {
-        System.out.println("Insumos recibidos: " + insumos); // Añade este log
-
         try {
             for (InsumoDTO insumoDTO : insumos) {
                 Insumo insumo = insumoRepository.findById(insumoDTO.getId())
                         .orElseThrow(() -> new RuntimeException("Insumo no encontrado: " + insumoDTO.getId()));
 
-                BigDecimal cantidadARestar = insumoDTO.getCantidad(); 
+                BigDecimal cantidadARestar = insumoDTO.getCantidad();
 
                 if (insumo.getStock() < cantidadARestar.intValue()) {
                     return ResponseEntity.badRequest().body("No hay suficiente stock para el insumo: " + insumoDTO.getId());
@@ -186,7 +185,7 @@ public class RentabilidadEjercicioController {
                 insumoRepository.save(insumo);
             }
         } catch (Exception e) {
-            e.printStackTrace(); // O usa un logger
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al actualizar el stock: " + e.getMessage());
         }
@@ -194,19 +193,15 @@ public class RentabilidadEjercicioController {
         return ResponseEntity.ok().build();
     }
 
-
-
     @PostMapping("/guardarInsumosSeleccionados")
     public ResponseEntity<?> guardarInsumosSeleccionados(@RequestBody List<Long> insumoIds) {
         try {
-            // Aquí puedes procesar los insumos seleccionados
             for (Long insumoId : insumoIds) {
                 Insumo insumo = insumoService.obtenerInsumoPorId(insumoId);
-                // Procesa el insumo, como actualizar stock, realizar cálculos, etc.
             }
-            return ResponseEntity.ok().build(); // Respuesta 200 OK
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
-            e.printStackTrace(); // Para ver el error en la consola
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al guardar insumos seleccionados");
         }
     }

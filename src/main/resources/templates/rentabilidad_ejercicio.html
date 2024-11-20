@@ -194,21 +194,21 @@
         <table class="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden mb-10">
             <thead class="bg-blue-600 text-white">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">ID Venta</th>
+					<th class="px-2 py-3 text-left text-xs font-semibold uppercase tracking-wider">ID Venta</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Fecha</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Método de Pago</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Detalles de Productos</th>
-					<th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Subtotal</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Descuento</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Recargo</th>
-                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Total</th>
+					<th class="px-1 py-3 text-left text-xs font-semibold uppercase tracking-wider">Subtotal</th>
+                    <th class="px-1 py-3 text-left text-xs font-semibold uppercase tracking-wider">Descuento</th>
+                    <th class="px-1 py-3 text-left text-xs font-semibold uppercase tracking-wider">Recargo</th>
+                    <th class="px-1 py-3 text-left text-xs font-semibold uppercase tracking-wider">Total</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 <tr th:each="venta : ${rentabilidadPorVenta}">
-                    <td th:text="${venta.idVenta}" class="px-6 py-4"></td>
+					<td th:text="${venta.idVenta}" class="px-1 py-4"></td>
                     <td th:text="${#temporals.format(venta.fechaHora, 'yyyy-MM-dd')}" class="px-6 py-4"></td>
-                    <td th:text="${venta.metodoPago}" class="px-6 py-4"></td>
+                    <td th:text="${venta.metodoPago}" class="px-1 py-4"></td>
                     <td class="px-6 py-4">
                         <table class="bg-gray-100 w-full">
                             <thead class="bg-gray-200 text-xs font-semibold text-gray-600 uppercase tracking-wider">
@@ -326,22 +326,20 @@
 		
 		<!-- Listado de balances anteriores -->
 		<div class="mb-8">
-		    <h2 class="text-xl font-bold mb-4">Balances Anteriores</h2>
-		    <div class="flex flex-col gap-4"> <!-- Cambié 'flex-wrap' por 'flex-col' -->
-		        <div th:each="balance : ${balances}">
-					<form th:action="@{/rentabilidad-ejercicio/balances/{id}(id=${balance.id})}" method="get">
-		                <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
-		                    <span th:text="${balance.fechaCreacion}"></span> <!-- Aquí se muestra la fecha formateada -->
-		                </button>
-		            </form>
-		        </div>
+		    <div th:each="balance : ${balances}">
+		        <form th:action="@{/rentabilidad-ejercicio/balances/{id}(id=${balance.id})}" method="get">
+		            <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg shadow-md hover:shadow-lg mb-4 w-full">
+		                <span th:if="${balance.fechasCompras.size() > 0}">
+		                    <!-- Concatenar fechas con guion entre ellas -->
+		                    <span th:each="fecha, iterStat : ${balance.fechasCompras}" th:text="${iterStat.index != 0 ? ' - ' : ''} + ${#temporals.format(fecha, 'dd-MM-yyyy')}"></span>
+		                </span>
+		                <span th:if="${balance.fechasCompras.size() == 0}">Fecha no disponible</span>
+		            </button>
+		        </form>
 		    </div>
 		</div>
 
     </div>
-	
-
-
 	   
 </body>
 
